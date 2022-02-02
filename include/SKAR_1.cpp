@@ -1,7 +1,7 @@
 #include "main.h"
-//#include "DriveTrain.cpp"
 #include "okapi/api.hpp"
 #include <vector>
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -62,23 +62,42 @@ void competition_initialize() {}
  */
 void autonomous() {
 	okapi::Motor front_rt(14, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor back_rt(1, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor back_rt(5, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor front_lft(15, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor back_lft(2, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor back_lft(4, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::MotorGroup drive_lft({front_lft, back_lft});
 	okapi::MotorGroup drive_rt({front_rt, back_rt});
+
+
+	okapi::IterativePosPIDController::Gains ks; 
+	ks.kP = 0.002;
+	ks.kI = 0;
+	ks.kD = -0.000001;
+	ks.kBias = 0;
+
 	std::shared_ptr<okapi::ChassisController> chassis =
 	okapi::ChassisControllerBuilder()
 		.withMotors(drive_lft, drive_rt)
 		// Green gearset, 4 in wheel diam, 11.5 in wheel track
 		.withDimensions(okapi::AbstractMotor::gearset::green, {{4_in, 11.5_in}, okapi::imev5GreenTPR})
+		.withGains(ks, ks)
 		.build();
-
+	
 	okapi::Motor goalcatch_lft(9, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor goalcatch_rt(10, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::MotorGroup goalcatch({goalcatch_lft, goalcatch_rt});
-
 	goalcatch.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+
+	std::shared_ptr<okapi::AsyncPositionController<double, double>> goalcatch_control =
+  		okapi::AsyncPosControllerBuilder().withMotor(goalcatch).build();
+
+	okapi::Motor lift_lft(20, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor lift_rt(11, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::MotorGroup lift({lift_lft, lift_rt});
+	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+
+	std::shared_ptr<okapi::AsyncPositionController<double, double>> lift_control =
+  		okapi::AsyncPosControllerBuilder().withMotor(lift).build();
 
 	okapi::Motor intake(16, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
@@ -102,9 +121,25 @@ void autonomous() {
 
 // 	profileController->setTarget("A");
 // 	profileController->waitUntilSettled();
-	chassis->moveDistance(3_ft);
+	lift_control->setTarget((2.9/8.0)*7);
+	chassis->moveDistance(11_ft);
 	chassis->waitUntilSettled();
- }
+	lift_control->waitUntilSettled();
+	lift_control->setTarget(1.0/8.0*7);
+	pros::delay(1000);
+	lift_control->waitUntilSettled();
+	chassis->moveDistance(-12_ft);
+	chassis->waitUntilSettled();
+	chassis->moveDistance(2_ft);
+	chassis->waitUntilSettled();
+	chassis->turnAngle(-250_deg);
+	chassis->waitUntilSettled();
+	chassis->moveDistance(-1_ft);
+	chassis->waitUntilSettled();
+	lift_control->setTarget(1.5/8.0*7);
+	intake.moveVoltage(-4500);
+	lift_control->setTarget((2.9/8.0)*7);
+ }	
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -122,110 +157,73 @@ void autonomous() {
 void opcontrol() {
 	int goalCatchPower = 100;
 
+	// Driving Motors
 	okapi::Motor front_rt(14, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor back_rt(1, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor front_lft(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor back_lft(2, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor back_rt(5, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor front_lft(15, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor back_lft(4, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::MotorGroup drive_lft({front_lft, back_lft});
 	okapi::MotorGroup drive_rt({front_rt, back_rt});
 	std::shared_ptr<okapi::ChassisController> chassis =
 	okapi::ChassisControllerBuilder()
-		.withMotors(drive_lft, drive_rt)
+		.withMotors({-15, -4}, {14, 5})
 		// Green gearset, 4 in wheel diam, 11.5 in wheel track
 		.withDimensions(okapi::AbstractMotor::gearset::green, {{4_in, 11.5_in}, okapi::imev5GreenTPR})
 		.build();
 
+	// Goalcatch Motors
 	okapi::Motor goalcatch_lft(9, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor goalcatch_rt(10, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::MotorGroup goalcatch({goalcatch_lft, goalcatch_rt});
-
 	goalcatch.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
+	okapi::Motor goalcatch_lft2(20, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor goalcatch_rt2(11, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::MotorGroup goalcatch2({goalcatch_lft2, goalcatch_rt2});
+	goalcatch2.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+
+	// Intake Motor
 	okapi::Motor intake(16, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 	while (true){
 
 		// Driving Mechanics
-		double y = -master.get_analog(ANALOG_LEFT_X);
-		double x = -master.get_analog(ANALOG_LEFT_Y);
+		double y = -master.get_analog(ANALOG_LEFT_Y);
+		double x = -master.get_analog(ANALOG_LEFT_X);
 		double z = -master.get_analog(ANALOG_RIGHT_X);
 
-		front_rt.moveVelocity(y-x+z);
-		back_rt.moveVelocity(y+x-z);
-    	front_lft.moveVelocity(y+x+z);
-		back_lft.moveVelocity(y-x-z);
+		front_rt.moveVoltage((-y+x+z)/127*11000);
+		back_rt.moveVoltage((y+x-z)/127*11000);
+    	front_lft.moveVoltage((-y-x-z)/127*11000);
+		back_lft.moveVoltage((y-x+z)/127*11000);
 
 		// Goal Catch Mechanics
-		if(master.get_digital(DIGITAL_A)){
-			goalcatch.moveVelocity(goalCatchPower);
-		} else if(master.get_digital(DIGITAL_B)) {
-			goalcatch.moveVelocity(-goalCatchPower);
+		if(master.get_digital(DIGITAL_R1)){
+			goalcatch.moveVelocity(goalCatchPower*100);
+		} else if(master.get_digital(DIGITAL_R2)) {
+			goalcatch.moveVelocity(-goalCatchPower*100);
 		} else {
 			goalcatch.moveVelocity(0);
 		}
 
+		if(master.get_digital(DIGITAL_L1)){
+			goalcatch2.moveVelocity(-goalCatchPower*100);
+		} else if(master.get_digital(DIGITAL_L2)) {
+			goalcatch2.moveVelocity(+goalCatchPower*100);
+		} else {
+			goalcatch2.moveVelocity(0);
+		}
+
 		// Intake
-		if(master.get_digital(DIGITAL_L2)) {
-			intake.moveVelocity(-90);
-		} else if(master.get_digital(DIGITAL_R2)){
-			intake.moveVelocity(90);
+		if(master.get_digital(DIGITAL_A)) {
+			intake.moveVoltage(-90);
+		} else if(master.get_digital(DIGITAL_B)){
+			intake.moveVoltage(90);
 		}else {
-			intake.moveVelocity(0);
+			intake.moveVoltage(0);
 		}
 
 		pros::delay(20);
 	}
-/*
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor front_rt(14);
-	pros::Motor back_rt(1);
-	pros::Motor front_lft(15);
-	pros::Motor back_lft(2);
-
-	//9 and 10 goalcatch motors
-	pros::Motor goalcatch_lft(9);
-	pros::Motor goalcatch_rt(10);
-
-	goalcatch_rt.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-	goalcatch_lft.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
-	// 16 intake motor
-	pros::Motor intake(16);
-
-	while (true){
-
-		// Driving Mechanics
-		double y = -master.get_analog(ANALOG_LEFT_X);
-		double x = -master.get_analog(ANALOG_LEFT_Y);
-		double z = -master.get_analog(ANALOG_RIGHT_X);
-
-		front_rt.move(y-x-z);
-		back_rt.move(y+x-z);
-    	front_lft.move(y+x+z);
-		back_lft.move(y-x+z);
-
-		// Goal Catch Mechanics
-		if(master.get_digital(DIGITAL_A)){
-			goalcatch_lft.move(-goalCatchPower);
-			goalcatch_rt.move(goalCatchPower);
-		} else if(master.get_digital(DIGITAL_B)) {
-			goalcatch_rt.move(-goalCatchPower);
-			goalcatch_lft.move(goalCatchPower);
-		} else {
-			goalcatch_rt.move(0);
-			goalcatch_lft.move(0);
-		}
-
-		// Intake
-		if(master.get_digital(DIGITAL_L2)) {
-			intake.move(-90);
-		} else if(master.get_digital(DIGITAL_R2)){
-			intake.move(90);
-		}else {
-			intake.move(0);
-		}
-
-		pros::delay(20);
-	}*/
 }
