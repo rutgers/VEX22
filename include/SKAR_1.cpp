@@ -68,7 +68,6 @@ void autonomous() {
 	okapi::MotorGroup drive_lft({front_lft, back_lft});
 	okapi::MotorGroup drive_rt({front_rt, back_rt});
 
-
 	okapi::IterativePosPIDController::Gains ks; 
 	ks.kP = 0.002;
 	ks.kI = 0;
@@ -186,6 +185,8 @@ void opcontrol() {
 	okapi::Motor intake(16, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
 
+	int intake_flag = 0;
+
 	while (true){
 
 		// Driving Mechanics
@@ -216,10 +217,19 @@ void opcontrol() {
 		}
 
 		// Intake
-		if(master.get_digital(DIGITAL_A)) {
-			intake.moveVoltage(-90);
-		} else if(master.get_digital(DIGITAL_B)){
-			intake.moveVoltage(90);
+		if(master.get_digital(DIGITAL_UP)) {
+			intake_flag = 1;
+		}
+		else if(master.get_digital(DIGITAL_DOWN)) {
+			intake_flag = -1;
+		}
+		else if(master.get_digital(DIGITAL_RIGHT) || master.get_digital(DIGITAL_LEFT)) {
+			intake_flag = 0;
+		}
+		if(intake_flag == 1) {
+			intake.moveVoltage(-9000);
+		} else if(intake_flag == -1){
+			intake.moveVoltage(9000);
 		}else {
 			intake.moveVoltage(0);
 		}

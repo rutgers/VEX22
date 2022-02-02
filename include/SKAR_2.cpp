@@ -2,6 +2,7 @@
 //#include "DriveTrain.cpp"
 #include "okapi/api.hpp"
 #include <vector>
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -115,6 +116,13 @@ void autonomous() {
 	);
 
 	// goalratio 1:3
+	/*
+
+	Game Plan:
+
+	<Insert plan here because i forgot lol>
+
+	*/
 	chassis->setMaxVelocity(100.0);
 	goalcatch_control->setTarget((0.3)*3); 
 	chassis->moveDistance(-3.7_ft);
@@ -221,56 +229,5 @@ void opcontrol() {
 
 		pros::delay(20);
 	}
-/*
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor front_rt(14);
-	pros::Motor back_rt(1);
-	pros::Motor front_lft(15);
-	pros::Motor back_lft(2);
 
-	//9 and 10 goalcatch motors
-	pros::Motor goalcatch_lft(9);
-	pros::Motor goalcatch_rt(10);
-
-	goalcatch_rt.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-	goalcatch_lft.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
-	// 16 intake motor
-	pros::Motor intake(16);
-
-	while (true){
-
-		// Driving Mechanics
-		double y = -master.get_analog(ANALOG_LEFT_X);
-		double x = -master.get_analog(ANALOG_LEFT_Y);
-		double z = -master.get_analog(ANALOG_RIGHT_X);
-
-		front_rt.move(y-x-z);
-		back_rt.move(y+x-z);
-    	front_lft.move(y+x+z);
-		back_lft.move(y-x+z);
-
-		// Goal Catch Mechanics
-		if(master.get_digital(DIGITAL_A)){
-			goalcatch_lft.move(-goalCatchPower);
-			goalcatch_rt.move(goalCatchPower);
-		} else if(master.get_digital(DIGITAL_B)) {
-			goalcatch_rt.move(-goalCatchPower);
-			goalcatch_lft.move(goalCatchPower);
-		} else {
-			goalcatch_rt.move(0);
-			goalcatch_lft.move(0);
-		}
-
-		// Intake
-		if(master.get_digital(DIGITAL_L2)) {
-			intake.move(-90);
-		} else if(master.get_digital(DIGITAL_R2)){
-			intake.move(90);
-		}else {
-			intake.move(0);
-		}
-
-		pros::delay(20);
-	}*/
 }
