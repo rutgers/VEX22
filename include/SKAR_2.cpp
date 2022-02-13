@@ -110,7 +110,6 @@ void autonomous() {
 	profileController->generatePath({
 		{0_ft, 0_ft, 0_deg},  // Profile starting position, this will normally be (0, 0, 0)
 		{10_ft, 0_ft, 0_deg}}, // The next point in the profile, 3 feet forward
-		//{10_ft, 0_ft, 90_deg}}, // The next point in the profile, 3 feet forward
 		"A" // Profile name
 	);
 
@@ -213,11 +212,11 @@ void opcontrol() {
 
 		// Claw Mechanics
 		if(master.get_digital(DIGITAL_R2)) {
-			claw.moveVelocity(10);
+			claw.moveVoltage(7000);
 		} else if(master.get_digital(DIGITAL_L2)) {
-			claw.moveVelocity(-10);
+			claw.moveVoltage(-7000);
 		} else {
-			claw.moveVelocity(0);
+			claw.moveVoltage(0);
 		}
 
 		pros::delay(20);
