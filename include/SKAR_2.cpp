@@ -1,5 +1,4 @@
 #include "main.h"
-//#include "DriveTrain.cpp"
 #include "okapi/api.hpp"
 #include <vector>
 
@@ -116,13 +115,6 @@ void autonomous() {
 	);
 
 	// goalratio 1:3
-	/*
-
-	Game Plan:
-
-	<Insert plan here because i forgot lol>
-
-	*/
 	chassis->setMaxVelocity(100.0);
 	goalcatch_control->setTarget((0.3)*3); 
 	chassis->moveDistance(-3.7_ft);
@@ -132,7 +124,7 @@ void autonomous() {
 	pros::delay(650);
 	chassis->moveDistance(2_ft);
 	chassis->waitUntilSettled();
-	chassis->turnAngle(170_deg);
+	//chassis->turnAngle(170_deg);
  }
 
 /**
@@ -157,7 +149,7 @@ void opcontrol() {
 	okapi::Motor front_rt(6, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor back_rt(7, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor front_lft(16, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor back_lft(19, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor back_lft(17, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::MotorGroup drive_lft({front_lft, back_lft});
 	okapi::MotorGroup drive_rt({front_rt, back_rt});
 	okapi::ChassisControllerBuilder()
@@ -166,21 +158,19 @@ void opcontrol() {
 		.withDimensions(okapi::AbstractMotor::gearset::green, {{4_in, 11.5_in}, okapi::imev5GreenTPR})
 		.build();
 
-	// Goal Catch Motors
-	okapi::Motor goalcatch_lft(15, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor goalcatch_rt(8, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::MotorGroup goalcatch({goalcatch_lft, goalcatch_rt});
-	goalcatch.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	// Front Lift Motors
+	okapi::Motor frontRLft(5, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor frontLLft(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 
 	// Lift Motors
-	okapi::Motor liftTL(1, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+	/* okapi::Motor liftTL(1, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor liftBL(9, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor liftTR(20, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor liftTR(2, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor liftBR(10, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::MotorGroup liftL({liftTL, liftBL});
 	liftL.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 	okapi::MotorGroup liftR({liftTR, liftBR});
-	liftR.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	liftR.setBrakeMode(okapi::AbstractMotor::brakeMode::hold); */
 
 	// Claw Motors
 	okapi::Motor claw(11, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
@@ -199,11 +189,14 @@ void opcontrol() {
 
 		// Goal Catch Mechanics 
 		if(master.get_digital(DIGITAL_A)){
-			goalcatch.moveVelocity(1200);
+			frontRLft.moveVelocity(1200);
+			frontLLft.moveVelocity(-1200);
 		} else if(master.get_digital(DIGITAL_B)) {
-			goalcatch.moveVelocity(-1200);
+			frontRLft.moveVelocity(-1200);
+			frontLLft.moveVelocity(1200);
 		} else {
-			goalcatch.moveVelocity(0);
+			frontRLft.moveVelocity(0);
+			frontLLft.moveVelocity(0);
 		}
 
 		// Lift Mechanics
