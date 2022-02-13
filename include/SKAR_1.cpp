@@ -136,7 +136,7 @@ void opcontrol() {
 
 		// Driving Mechanics
 		double y = master->get_analog(ANALOG_LEFT_Y);
-		double x = -master->get_analog(ANALOG_LEFT_X);
+		double x = master->get_analog(ANALOG_LEFT_X);
 		double z = -master->get_analog(ANALOG_RIGHT_X);
 
 		front_rt->moveVoltage((y+x+z)/127*11000);
@@ -149,9 +149,9 @@ void opcontrol() {
 		}
 		else if(master->get_digital(DIGITAL_B)) {
 			lift_front_control->setTarget(100.0/360.0*LIFT_GEAR_RATIO);
-		} else if(master->get_digital(DIGITAL_L1)){
+		} else if(master->get_digital(DIGITAL_L2)){
 			lift_front->moveVelocity(25);
-		} else if(master->get_digital(DIGITAL_L2)) {
+		} else if(master->get_digital(DIGITAL_L1)) {
 			lift_front->moveVelocity(-25);
 		} else if(lift_front_control->isSettled()){
 			lift_front->moveVelocity(0);
@@ -162,9 +162,9 @@ void opcontrol() {
 		}
 		else if(master->get_digital(DIGITAL_Y)) {
 			lift_back_control->setTarget(-100.0/360.0*LIFT_GEAR_RATIO);
-		} else if(master->get_digital(DIGITAL_R1)){
+		} else if(master->get_digital(DIGITAL_R2)){
 			lift_back->moveVelocity(-25);
-		} else if(master->get_digital(DIGITAL_R2)) {
+		} else if(master->get_digital(DIGITAL_R1)) {
 			lift_back->moveVelocity(25);
 		} else if(lift_back_control->isSettled()){
 			lift_back->moveVelocity(0);
