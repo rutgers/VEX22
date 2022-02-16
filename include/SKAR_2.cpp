@@ -32,7 +32,7 @@ double FRONT_LIFT_UP = -(0.5/8.0)*FRONT_LIFT_GEAR_RATIO;
 void initialize() {
 
 	// PID Variables
-	ks.kP = 0.002;
+	ks.kP = 0.0016;
 	ks.kI = 0;
 	ks.kD = -0.000001;
 	ks.kBias = 0;
@@ -113,19 +113,22 @@ void competition_initialize() {}
 void autonomous() {
 
 	// goalratio 1:3
-	chassis->setMaxVelocity(100.0);
-	lift_front_control->setTarget((0.3)*3); 
-	chassis->moveDistance(3.7_ft);
-	chassis->waitUntilSettled();
-	pros::delay(650);
-	lift_front_control->setTarget((0.155)*3);
-	pros::delay(650);
-	chassis->moveDistance(-2_ft);
-	chassis->waitUntilSettled();
-	chassis->turnAngle(170_deg);
-	chassis->waitUntilSettled();
-	chassis->moveDistance(-1_ft);
-	piston->set_value(true);
+	//chassis->setMaxVelocity(100.0);
+	lift_front_control->setTarget(FRONT_LIFT_DOWN); 
+	chassis->moveDistance(-6.9_ft);
+	pros::delay(300);
+	lift_front_control->setTarget(FRONT_LIFT_UP);
+	pros::delay(300);
+	chassis->moveDistance(5.5_ft);
+	// chassis->turnAngle(185_deg);
+	// lift_front_control->setTarget(FRONT_LIFT_DOWN);
+	// piston->set_value(false);
+	
+	// lift_back_control->setTarget(-(1.2/32.0)*BACK_LIFT_GEAR_RATIO);
+	// chassis->moveDistance(6_ft);
+	// piston->set_value(true);
+	// chassis->moveDistance(-6_ft);
+
 	//Drop ring;
  }
 
@@ -143,6 +146,7 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	chassis->stop();
 	int piston_timer = 0;
 	bool piston_flag = false;
 	while (true){

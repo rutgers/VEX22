@@ -24,5 +24,8 @@ std::shared_ptr<okapi::MotorGroup> lift_back;
 std::shared_ptr<okapi::AsyncPositionController<double, double>> lift_back_control;
 
 std::shared_ptr<okapi::Motor> intake;
+std::shared_ptr<okapi::Motor> claw;
+std::shared_ptr<okapi::AsyncPositionController<double, double>> claw_control;
+
 
 std::shared_ptr<pros::Controller> master;

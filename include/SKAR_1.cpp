@@ -58,6 +58,9 @@ void initialize() {
 	lift_back_control =	okapi::AsyncPosControllerBuilder().withMotor(lift_back).build();
 
 	intake.reset(new okapi::Motor(17, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
+	claw.reset(new okapi::Motor(8, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	claw_control =	okapi::AsyncPosControllerBuilder().withMotor(claw).build();
+
 	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
 }
 
@@ -94,24 +97,21 @@ void autonomous() {
 	//Lift Gear ratio 1:5
 	lift_front_control->setTarget((3.0/8.0)*LIFT_GEAR_RATIO);
 	chassis->moveDistance(6_ft);
-	chassis->waitUntilSettled();
-	lift_front_control->waitUntilSettled();
-	lift_front_control->setTarget(2/8.0*LIFT_GEAR_RATIO);
+	lift_front_control->setTarget(100.0/360.0*LIFT_GEAR_RATIO);
 	pros::delay(1000);
 	lift_front_control->waitUntilSettled();
-	chassis->moveDistance(-5.6_ft);
-	chassis->waitUntilSettled();
-	chassis->moveDistance(1_ft);
-	chassis->waitUntilSettled();
-	chassis->turnAngle(-140_deg);
-	chassis->waitUntilSettled();
-	lift_back_control->setTarget(-3.0/8.0*LIFT_GEAR_RATIO);
-	lift_back_control->waitUntilSettled();
-	chassis->moveDistance(-3_ft);
-	chassis->waitUntilSettled();
-	lift_back_control->setTarget(-(2/8.0)*LIFT_GEAR_RATIO);
-	chassis->moveDistance(3_ft);
-	intake->moveVoltage(12000);
+	chassis->moveDistance(-4_ft);
+	// chassis->waitUntilSettled();
+	// chassis->moveDistance(1_ft);
+	// chassis->waitUntilSettled();
+	// lift_back_control->setTarget(-3.0/8.0*LIFT_GEAR_RATIO);
+	// chassis->turnAngle(-140_deg);
+	// chassis->waitUntilSettled();
+	// chassis->moveDistance(-3_ft);
+	// chassis->waitUntilSettled();
+	// lift_back_control->setTarget(-100.0/360.0*LIFT_GEAR_RATIO);
+	// chassis->moveDistance(3_ft);
+	// intake->moveVoltage(12000);
  }	
 
 /**
@@ -128,6 +128,7 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	chassis->stop();
 	int intake_flag = 0;
 	int delay = 0;
 	bool chassis_hold = false;
@@ -159,9 +160,11 @@ void opcontrol() {
 
 		if(master->get_digital(DIGITAL_X)) {
 			lift_back_control->setTarget((-3.0/8.0)*LIFT_GEAR_RATIO);
+			claw_control->setTarget(0);
 		}
 		else if(master->get_digital(DIGITAL_Y)) {
 			lift_back_control->setTarget(-100.0/360.0*LIFT_GEAR_RATIO);
+			claw_control->setTarget(1.0/4.0);
 		} else if(master->get_digital(DIGITAL_R2)){
 			lift_back->moveVelocity(-25);
 		} else if(master->get_digital(DIGITAL_R1)) {
