@@ -85,27 +85,22 @@ void opcontrol() {
 	// Drive Motors
 
 	// Front Right Motors
-	okapi::Motor front_rt_1(13, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor front_rt_2(15, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor front_rt(5, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	
 	// Front Left Motors
-	okapi::Motor front_lft_1(18, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor front_lft_2(16, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor front_lft(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	
 	
 	// Back Right Motors
-	okapi::Motor back_rt_1(3, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor back_rt_2(5, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor back_rt(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	
 	// Back Left Motors
-	okapi::Motor back_lft_1(6, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor back_lft_2(8, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+	okapi::Motor back_lft(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
 	
 	// Group Motors
-	okapi::MotorGroup front_rt({front_rt_1, front_rt_2});
-	okapi::MotorGroup front_lft({front_lft_1, front_lft_2});
-	okapi::MotorGroup back_rt({back_rt_1, back_rt_2});
-	okapi::MotorGroup back_lft({back_lft_1, back_lft_2});
+	okapi::MotorGroup left({front_lft, back_lft});
+	okapi::MotorGroup right({front_rt, back_rt});
+	
 
 	// Chasis Motors Grouped
 	/* okapi::ChassisControllerBuilder()
@@ -115,26 +110,32 @@ void opcontrol() {
 		.build(); */
 
 	// Claw Motors
-	okapi::Motor clawFL(20, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+	/* okapi::Motor clawFL(20, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor clawFR(11, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor clawBL(1, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::Motor clawBR(10, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 	okapi::MotorGroup clawR({clawFR, clawBR});
 	clawR.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 	okapi::MotorGroup clawL({clawFL, clawBL});
-	clawL.setBrakeMode(okapi::AbstractMotozr::brakeMode::hold);
+	clawL.setBrakeMode(okapi::AbstractMotozr::brakeMode::hold); */
 
 	while (true){
 		// Drive Mechanics
-		double y = master.get_analog(ANALOG_LEFT_Y);
+		double y_l = master.get_analog(ANALOG_LEFT_Y);
+		double y_r = master.get_analog(ANALOG_RIGHT_Y);
+
+		left.moveVelocity(y_l);
+		right.moveVelocity(y_r);
+
+		/* double y = master.get_analog(ANALOG_LEFT_Y);
 		double x = master.get_analog(ANALOG_LEFT_X);
 		double z = master.get_analog(ANALOG_RIGHT_X);
 		front_rt.moveVelocity(y+x+z);
 		back_rt.moveVelocity(y-x+z);
     	front_lft.moveVelocity(y-x-z);
-		back_lft.moveVelocity(y+x-z);
+		back_lft.moveVelocity(y+x-z); */
 
-		if(master.get_digital(DIGITAL_A)) {
+		/* if(master.get_digital(DIGITAL_A)) {
 			clawL.moveVelocity(100);
 		} else if(master.get_digital(DIGITAL_B)){
 			clawL.moveVelocity(-100);
@@ -148,7 +149,7 @@ void opcontrol() {
 			clawR.moveVelocity(-100);
 		} else {
 			clawR.moveVelocity(0);
-		}
+		} */
 
 		pros::delay(20);
 	}

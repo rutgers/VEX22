@@ -24,42 +24,65 @@ void on_center_button() {
  */
 void initialize() {
 
-	front_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	back_rt.reset(new okapi::Motor(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	front_lft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	back_lft.reset(new okapi::Motor(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	drive_lft.reset(new okapi::MotorGroup({*front_lft, *back_lft}));
-	drive_rt.reset(new okapi::MotorGroup({*front_rt, *back_rt}));
- 
 	ks.kP = 0.0010;
 	ks.kI = 0;
 	ks.kD = -0.000002;
 	ks.kBias = 0;
 
+	// Drive Motors
+	front_rt1.reset(new okapi::Motor(12, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_rt2.reset(new okapi::Motor(11, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_rt1.reset(new okapi::Motor(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_rt2.reset(new okapi::Motor(1, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_lft1.reset(new okapi::Motor(19, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_lft2.reset(new okapi::Motor(20, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_lft1.reset(new okapi::Motor(9, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_lft2.reset(new okapi::Motor(10, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+
+	front_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2}));
+	front_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2}));
+	back_rt.reset(new okapi::MotorGroup({back_rt1, back_rt2}));
+	back_lft.reset(new okapi::MotorGroup({back_lft1, back_lft2}));
+
+	drive_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2, back_lft1, back_lft2}));
+	drive_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2, back_rt1, back_rt2}));
 	chassis = okapi::ChassisControllerBuilder()
 		.withMotors(drive_lft, drive_rt)
 		// Green gearset, 4 in wheel diam, 11.5 in wheel track
-		.withDimensions(okapi::AbstractMotor::gearset::green, {{4_in, 11.5_in}, okapi::imev5GreenTPR})
+		.withDimensions(okapi::AbstractMotor::gearset::green, {{2.75_in, 12_in}, okapi::imev5GreenTPR})
 		.withGains(ks, ks)
 		.build();
 	
-	lift_front_lft.reset(new okapi::Motor(20, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	lift_front_rt.reset(new okapi::Motor(11, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	lift_front_lft.reset(new okapi::Motor(18, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
+	lift_front_rt.reset(new okapi::Motor(13, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
 	lift_front.reset(new okapi::MotorGroup({*lift_front_lft, *lift_front_rt}));
 	lift_front->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
 	lift_front_control = okapi::AsyncPosControllerBuilder().withMotor(*lift_front).build();
 
-	lift_back_lft.reset(new okapi::Motor(10, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	lift_back_rt.reset(new okapi::Motor(1, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	lift_back.reset(new okapi::MotorGroup({lift_back_lft, lift_back_rt}));
+	lift_back_lft.reset(new okapi::Motor(8, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
+	lift_back_rt.reset(new okapi::Motor(3, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
+	lift_back.reset(new okapi::MotorGroup({*lift_back_lft, *lift_back_rt}));
 	lift_back->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
 	lift_back_control =	okapi::AsyncPosControllerBuilder().withMotor(lift_back).build();
 
-	intake.reset(new okapi::Motor(17, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
-	claw.reset(new okapi::Motor(8, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	claw_control =	okapi::AsyncPosControllerBuilder().withMotor(claw).build();
+	back_claw_lft.reset(new okapi::Motor(7, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_claw_rt.reset(new okapi::Motor(4, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_claw.reset(new okapi::MotorGroup({*back_claw_lft, *back_claw_rt}));
+	back_claw->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	back_claw_control = okapi::AsyncPosControllerBuilder().withMotor(back_claw).build();
+
+	front_claw_piston.reset(new pros::ADIDigitalOut('A'));
+	front_claw_motor.reset(new okapi::Motor(14, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
+
+	intake_lft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	intake_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	intake.reset(new okapi::MotorGroup({*intake_lft, *intake_rt}));
+
+	camera.reset(new pros::Vision(17));
+
+	imu.reset(new pros::Imu(15));
 
 	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
 }
@@ -94,14 +117,14 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-	//Lift Gear ratio 1:5
-	lift_front_control->setTarget((3.0/8.0)*LIFT_GEAR_RATIO);
-	chassis->moveDistance(6_ft);
-	lift_front_control->setTarget(100.0/360.0*LIFT_GEAR_RATIO);
-	pros::delay(1000);
-	lift_front_control->waitUntilSettled();
-	chassis->moveDistance(-4_ft);
-	// chassis->waitUntilSettled();
+	// //Lift Gear ratio 1:5
+	// lift_front_control->setTarget((3.0/8.0)*LIFT_GEAR_RATIO);
+	// chassis->moveDistance(6_ft);
+	// lift_front_control->setTarget(100.0/360.0*LIFT_GEAR_RATIO);
+	// pros::delay(1000);
+	// lift_front_control->waitUntilSettled();
+	// chassis->moveDistance(-4_ft);
+	// // chassis->waitUntilSettled();
 	// chassis->moveDistance(1_ft);
 	// chassis->waitUntilSettled();
 	// lift_back_control->setTarget(-3.0/8.0*LIFT_GEAR_RATIO);
@@ -146,31 +169,31 @@ void opcontrol() {
 		back_lft->moveVoltage((y+x-z)/127*11000);
 
 		if(master->get_digital(DIGITAL_A)) {
-			lift_front_control->setTarget((3.0/8.0)*LIFT_GEAR_RATIO);
+			lift_back_control->setTarget((3.0/8.0)*LIFT_GEAR_RATIO);
 		}
 		else if(master->get_digital(DIGITAL_B)) {
-			lift_front_control->setTarget(100.0/360.0*LIFT_GEAR_RATIO);
+			lift_back_control->setTarget(100.0/360.0*LIFT_GEAR_RATIO);
 		} else if(master->get_digital(DIGITAL_L2)){
-			lift_front->moveVelocity(25);
+			lift_back->moveVelocity(1000);
 		} else if(master->get_digital(DIGITAL_L1)) {
-			lift_front->moveVelocity(-25);
-		} else if(lift_front_control->isSettled()){
-			lift_front->moveVelocity(0);
+			lift_back->moveVelocity(-1000);
+		} else if(lift_back_control->isSettled()){
+			lift_back->moveVelocity(0);
 		}
 
 		if(master->get_digital(DIGITAL_X)) {
-			lift_back_control->setTarget((-3.0/8.0)*LIFT_GEAR_RATIO);
-			claw_control->setTarget(0);
+			lift_front_control->setTarget((-3.0/8.0)*LIFT_GEAR_RATIO);
+			// front_claw_control->setTarget(0);
 		}
 		else if(master->get_digital(DIGITAL_Y)) {
-			lift_back_control->setTarget(-100.0/360.0*LIFT_GEAR_RATIO);
-			claw_control->setTarget(1.0/4.0);
+			lift_front_control->setTarget(-100.0/360.0*LIFT_GEAR_RATIO);
+			// front_claw_control->setTarget(1.0/4.0);
 		} else if(master->get_digital(DIGITAL_R2)){
-			lift_back->moveVelocity(-25);
+			lift_front->moveVelocity(-1000);
 		} else if(master->get_digital(DIGITAL_R1)) {
-			lift_back->moveVelocity(25);
-		} else if(lift_back_control->isSettled()){
-			lift_back->moveVelocity(0);
+			lift_front->moveVelocity(1000);
+		} else if(lift_front_control->isSettled()){
+			lift_front->moveVelocity(0);
 		}
 
 		if(master->get_digital(DIGITAL_LEFT) && delay <= 0) {
