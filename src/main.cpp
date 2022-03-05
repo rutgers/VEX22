@@ -4,7 +4,7 @@
 #define SKAR_2 3
 #define SKAR_3 4
 
-#define BUILD_TARGET SKAR_1 //SKAR_1 or SKAR_2
+#define BUILD_TARGET SKAR_2 //SKAR_1 or SKAR_2
 #define AUTON_SIDE RED //RED OR BLUE
 #if BUILD_TARGET == SKAR_1
     #include "SKAR_1.cpp"

@@ -6,12 +6,16 @@
  * When this callback is fired, it will toggle line 2 of the LCD text between
  * "I was pressed!" and nothing.
  */
-void on_center_button() {
+void on_center_button()
+{
 	static bool pressed = false;
 	pressed = !pressed;
-	if (pressed) {
+	if (pressed)
+	{
 		pros::lcd::set_text(2, "I was pressed!");
-	} else {
+	}
+	else
+	{
 		pros::lcd::clear_line(2);
 	}
 }
@@ -22,7 +26,8 @@ void on_center_button() {
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
+void initialize()
+{
 
 	ks.kP = 0.0010;
 	ks.kI = 0;
@@ -47,12 +52,12 @@ void initialize() {
 	drive_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2, back_lft1, back_lft2}));
 	drive_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2, back_rt1, back_rt2}));
 	chassis = okapi::ChassisControllerBuilder()
-		.withMotors(drive_lft, drive_rt)
-		// Green gearset, 4 in wheel diam, 11.5 in wheel track
-		.withDimensions(okapi::AbstractMotor::gearset::green, {{2.75_in, 12_in}, okapi::imev5GreenTPR})
-		.withGains(ks, ks)
-		.build();
-	
+				  .withMotors(drive_lft, drive_rt)
+				  // Green gearset, 4 in wheel diam, 11.5 in wheel track
+				  .withDimensions(okapi::AbstractMotor::gearset::green, {{2.75_in, 12_in}, okapi::imev5GreenTPR})
+				  .withGains(ks, ks)
+				  .build();
+
 	lift_front_lft.reset(new okapi::Motor(18, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
 	lift_front_rt.reset(new okapi::Motor(13, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
 	lift_front.reset(new okapi::MotorGroup({*lift_front_lft, *lift_front_rt}));
@@ -65,7 +70,7 @@ void initialize() {
 	lift_back.reset(new okapi::MotorGroup({*lift_back_lft, *lift_back_rt}));
 	lift_back->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
-	lift_back_control =	okapi::AsyncPosControllerBuilder().withMotor(lift_back).build();
+	lift_back_control = okapi::AsyncPosControllerBuilder().withMotor(lift_back).build();
 
 	back_claw_lft.reset(new okapi::Motor(7, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	back_claw_rt.reset(new okapi::Motor(4, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
@@ -86,6 +91,7 @@ void initialize() {
 	imu.reset(new pros::Imu(15));
 
 	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
+
 }
 
 /**
@@ -117,26 +123,27 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {
+void autonomous()
+{
 	// //Lift Gear ratio 1:5
-	// lift_front_control->setTarget((3.0/8.0)*LIFT_GEAR_RATIO);
-	// chassis->moveDistance(6_ft);
-	// lift_front_control->setTarget(100.0/360.0*LIFT_GEAR_RATIO);
-	// pros::delay(1000);
-	// lift_front_control->waitUntilSettled();
-	// chassis->moveDistance(-4_ft);
-	// // chassis->waitUntilSettled();
-	// chassis->moveDistance(1_ft);
-	// chassis->waitUntilSettled();
-	// lift_back_control->setTarget(-3.0/8.0*LIFT_GEAR_RATIO);
-	// chassis->turnAngle(-140_deg);
-	// chassis->waitUntilSettled();
-	// chassis->moveDistance(-3_ft);
-	// chassis->waitUntilSettled();
-	// lift_back_control->setTarget(-100.0/360.0*LIFT_GEAR_RATIO);
-	// chassis->moveDistance(3_ft);
-	// intake->moveVoltage(12000);
- }	
+	lift_front_control->setTarget((3.0 / 8.0) * LIFT_GEAR_RATIO);
+	chassis->moveDistance(6_ft);
+	lift_front_control->setTarget(100.0 / 360.0 * LIFT_GEAR_RATIO);
+	pros::delay(1000);
+	lift_front_control->waitUntilSettled();
+	chassis->moveDistance(-4_ft);
+	chassis->waitUntilSettled();
+	chassis->moveDistance(1_ft);
+	chassis->waitUntilSettled();
+	lift_back_control->setTarget(-3.0 / 8.0 * LIFT_GEAR_RATIO);
+	chassis->turnAngle(-140_deg);
+	chassis->waitUntilSettled();
+	chassis->moveDistance(-3_ft);
+	chassis->waitUntilSettled();
+	lift_back_control->setTarget(-100.0 / 360.0 * LIFT_GEAR_RATIO);
+	chassis->moveDistance(3_ft);
+	intake->moveVoltage(12000);
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -151,7 +158,8 @@ void autonomous() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-void opcontrol() {
+void opcontrol()
+{
 	chassis->stop();
 	int intake_flag = 0;
 	int delay = 0;
@@ -161,17 +169,23 @@ void opcontrol() {
 	bool back_flag = true;
 	bool chassis_hold = false;
 
-	while (true){
+	int piston_timer = 0;
+	bool piston_flag = false;
+
+	int double_tap = 0;
+
+	while (true)
+	{
 
 		// Driving Mechanics
 		double y = master->get_analog(ANALOG_LEFT_Y);
 		double x = 0;//master->get_analog(ANALOG_LEFT_X);
 		double z = -master->get_analog(ANALOG_RIGHT_X);
 
-		front_rt->moveVoltage((y+x+z)/127*11000);
-		back_rt->moveVoltage((y-x+z)/127*11000);
-    	front_lft->moveVoltage((y-x-z)/127*11000);
-		back_lft->moveVoltage((y+x-z)/127*11000);
+		front_rt->moveVoltage((y + x + z) / 127 * 11000);
+		back_rt->moveVoltage((y - x + z) / 127 * 11000);
+		front_lft->moveVoltage((y - x - z) / 127 * 11000);
+		back_lft->moveVoltage((y + x - z) / 127 * 11000);
 
 		// if(master->get_digital(DIGITAL_A)) {
 		// 	lift_back_control->setTarget((2.0/8.0)*BACK_LIFT_GEAR_RATIO);
@@ -181,9 +195,13 @@ void opcontrol() {
 		// } else 
 		if(master->get_digital(DIGITAL_L2)){
 			lift_back->moveVelocity(1000);
-		} else if(master->get_digital(DIGITAL_L1)) {
+		}
+		else if (master->get_digital(DIGITAL_L1))
+		{
 			lift_back->moveVelocity(-1000);
-		} else if(lift_back_control->isSettled()){
+		}
+		else if (lift_back_control->isSettled())
+		{
 			lift_back->moveVelocity(0);
 		}
 
@@ -194,54 +212,72 @@ void opcontrol() {
 		else if(master->get_digital(DIGITAL_Y)) {
 			lift_front_control->setTarget(-100.0/360.0*BACK_LIFT_GEAR_RATIO);
 			// front_claw_control->setTarget(1.0/4.0);
-		} else if(master->get_digital(DIGITAL_R2)){
+		}
+		else if (master->get_digital(DIGITAL_R2))
+		{
 			lift_front->moveVelocity(-1000);
-		} else if(master->get_digital(DIGITAL_R1)) {
+		}
+		else if (master->get_digital(DIGITAL_R1))
+		{
 			lift_front->moveVelocity(1000);
-		} else if(lift_front_control->isSettled()){
+		}
+		else if (lift_front_control->isSettled())
+		{
 			lift_front->moveVelocity(0);
 		}
 
-		if(master->get_digital(DIGITAL_LEFT) && delay <= 0) {
+		if (master->get_digital(DIGITAL_LEFT) && delay <= 0)
+		{
 			chassis_hold = !chassis_hold;
 			delay = 200;
 		}
 
-		if(chassis_hold) {
+		if (chassis_hold)
+		{
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 		}
-		else {
+		else
+		{
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 		}
 
-		if(chassis_hold) {
-
+		if (chassis_hold)
+		{
 		}
-		else {
-
+		else
+		{
 		}
 
 		// Intake
-		if(master->get_digital(DIGITAL_UP)) {
+		if (master->get_digital(DIGITAL_UP))
+		{
 			intake_flag = -1;
 		}
-		else if(master->get_digital(DIGITAL_DOWN)) {
+		else if (master->get_digital(DIGITAL_DOWN))
+		{
 			intake_flag = 1;
 		}
-		else if(master->get_digital(DIGITAL_RIGHT)) {
+		else if (master->get_digital(DIGITAL_RIGHT))
+		{
 			intake_flag = 0;
+			double_tap++;
 		}
-		if(intake_flag == 1) {
+		if (intake_flag == 1)
+		{
 			intake->moveVoltage(-12000);
-		} else if(intake_flag == -1){
+		}
+		else if (intake_flag == -1)
+		{
 			intake->moveVoltage(12000);
-		}else {
+		}
+		else
+		{
 			intake->moveVoltage(0);
 		}
 
@@ -274,7 +310,9 @@ void opcontrol() {
 		}
 
 		pros::delay(20);
-		if(delay > 0) {
+
+		if (delay > 0)
+		{
 			delay = delay - 20;
 		}
 		if(front_claw_timer > 0) {
