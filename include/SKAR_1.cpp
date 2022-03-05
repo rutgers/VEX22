@@ -90,6 +90,7 @@ void initialize()
 	imu.reset(new pros::Imu(15));
 
 	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
+
 }
 
 /**
@@ -165,6 +166,8 @@ void opcontrol()
 
 	int piston_timer = 0;
 	bool piston_flag = false;
+
+	int double_tap = 0;
 
 	while (true)
 	{
@@ -263,6 +266,7 @@ void opcontrol()
 		else if (master->get_digital(DIGITAL_RIGHT))
 		{
 			intake_flag = 0;
+			double_tap++;
 		}
 		if (intake_flag == 1)
 		{
@@ -277,7 +281,7 @@ void opcontrol()
 			intake->moveVoltage(0);
 		}
 
-		if (piston_timer <= 0 && master->get_digital(DIGITAL_DOWN))
+		if (piston_timer <= 0)
 		{
 			piston_timer = 300;
 			piston_flag = !piston_flag;
@@ -288,6 +292,14 @@ void opcontrol()
 		if (piston_timer > 0)
 		{
 			piston_timer = piston_timer - 20;
+		}
+
+		if(double_tap == 2) 
+		{
+			front_claw_motor->moveVelocity(10);
+			double_tap = 0;
+		} else {
+			front_claw_motor->moveVelocity(0);
 		}
 
 		pros::delay(20);
