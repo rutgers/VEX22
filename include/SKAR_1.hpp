@@ -1,7 +1,8 @@
 #include "main.h"
 #include "okapi/api.hpp"
 #include <vector>
-int LIFT_GEAR_RATIO = 5;
+float BACK_LIFT_GEAR_RATIO = 5.0/3.0;
+float CHASSIS_GEAR_RATIO = 3.0/5.0;
 
 std::shared_ptr<okapi::Motor> front_rt1;
 std::shared_ptr<okapi::Motor> front_rt2;
@@ -44,6 +45,7 @@ std::shared_ptr<okapi::MotorGroup> intake;
 
 std::shared_ptr<pros::ADIDigitalOut> front_claw_piston;
 std::shared_ptr<okapi::Motor> front_claw_motor;
+std::shared_ptr<okapi::AsyncPositionController<double, double>> front_claw_control;
 
 std::shared_ptr<pros::Vision> camera;
  

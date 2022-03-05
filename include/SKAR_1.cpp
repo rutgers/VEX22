@@ -75,6 +75,7 @@ void initialize() {
 
 	front_claw_piston.reset(new pros::ADIDigitalOut('A'));
 	front_claw_motor.reset(new okapi::Motor(14, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
+	front_claw_control = okapi::AsyncPosControllerBuilder().withMotor(front_claw_motor).build();
 
 	intake_lft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 	intake_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
@@ -154,13 +155,17 @@ void opcontrol() {
 	chassis->stop();
 	int intake_flag = 0;
 	int delay = 0;
+	int front_claw_timer = 0;
+	int back_claw_timer = 0;
+	bool front_flag = false;
+	bool back_flag = true;
 	bool chassis_hold = false;
 
 	while (true){
 
 		// Driving Mechanics
 		double y = master->get_analog(ANALOG_LEFT_Y);
-		double x = master->get_analog(ANALOG_LEFT_X);
+		double x = 0;//master->get_analog(ANALOG_LEFT_X);
 		double z = -master->get_analog(ANALOG_RIGHT_X);
 
 		front_rt->moveVoltage((y+x+z)/127*11000);
@@ -168,12 +173,13 @@ void opcontrol() {
     	front_lft->moveVoltage((y-x-z)/127*11000);
 		back_lft->moveVoltage((y+x-z)/127*11000);
 
-		if(master->get_digital(DIGITAL_A)) {
-			lift_back_control->setTarget((3.0/8.0)*LIFT_GEAR_RATIO);
-		}
-		else if(master->get_digital(DIGITAL_B)) {
-			lift_back_control->setTarget(100.0/360.0*LIFT_GEAR_RATIO);
-		} else if(master->get_digital(DIGITAL_L2)){
+		// if(master->get_digital(DIGITAL_A)) {
+		// 	lift_back_control->setTarget((2.0/8.0)*BACK_LIFT_GEAR_RATIO);
+		// }
+		// else if(master->get_digital(DIGITAL_B)) {
+		// 	lift_back_control->setTarget(45.0/360.0*BACK_LIFT_GEAR_RATIO);
+		// } else 
+		if(master->get_digital(DIGITAL_L2)){
 			lift_back->moveVelocity(1000);
 		} else if(master->get_digital(DIGITAL_L1)) {
 			lift_back->moveVelocity(-1000);
@@ -182,11 +188,11 @@ void opcontrol() {
 		}
 
 		if(master->get_digital(DIGITAL_X)) {
-			lift_front_control->setTarget((-3.0/8.0)*LIFT_GEAR_RATIO);
+			lift_front_control->setTarget((-3.0/8.0)*BACK_LIFT_GEAR_RATIO);
 			// front_claw_control->setTarget(0);
 		}
 		else if(master->get_digital(DIGITAL_Y)) {
-			lift_front_control->setTarget(-100.0/360.0*LIFT_GEAR_RATIO);
+			lift_front_control->setTarget(-100.0/360.0*BACK_LIFT_GEAR_RATIO);
 			// front_claw_control->setTarget(1.0/4.0);
 		} else if(master->get_digital(DIGITAL_R2)){
 			lift_front->moveVelocity(-1000);
@@ -238,9 +244,44 @@ void opcontrol() {
 		}else {
 			intake->moveVoltage(0);
 		}
+
+		if(front_claw_timer <= 0 && master->get_digital(DIGITAL_B)) {
+			front_claw_piston->set_value(false);
+
+			if(!front_flag) {
+				front_claw_control->setTarget(0.25);
+			}
+			else {
+				front_claw_control->setTarget(0);
+			}
+			front_claw_timer = 300;
+			front_flag = !front_flag;
+		}
+
+		if(back_claw_timer <= 0 && master->get_digital(DIGITAL_A)) {
+			if(!back_flag) {
+				back_claw_control->setTarget(0.25);
+			}
+			else {
+				back_claw_control->setTarget(0);
+			}
+			back_claw_timer = 300;
+			back_flag = !back_flag;
+		}
+		
+		if(front_claw_control->isSettled()){
+			front_claw_piston->set_value(true);
+		}
+
 		pros::delay(20);
 		if(delay > 0) {
 			delay = delay - 20;
 		}
+		if(front_claw_timer > 0) {
+			front_claw_timer = front_claw_timer - 20;
+		} 
+		if(back_claw_timer > 0) {
+			back_claw_timer = back_claw_timer - 20;
+		}   
 	}
 }
