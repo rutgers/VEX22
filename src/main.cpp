@@ -1,14 +1,13 @@
-#define RED 0
-#define BLUE 1
 #define SKAR_1 2
 #define SKAR_2 3
 #define SKAR_3 4
 
+#define SKILLS true
 #define BUILD_TARGET SKAR_2 //SKAR_1 or SKAR_2
-#define AUTON_SIDE RED //RED OR BLUE
-#if BUILD_TARGET == SKAR_1
-    #include "SKAR_1.cpp"
-#endif
+//#define AUTON_SIDE RED //RED OR BLUE
+// #if BUILD_TARGET == SKAR_1
+//     #include "SKAR_1.cpp"
+// #endif
 #if BUILD_TARGET == SKAR_2
     #include "SKAR_2.cpp"
 #endif

@@ -1,4 +1,4 @@
-#include "SKAR_1.hpp"
+#include "SKAR_2.hpp"
 
 /**
  * A callback function for LLEMU's center button.
@@ -6,6 +6,21 @@
  * When this callback is fired, it will toggle line 2 of the LCD text between
  * "I was pressed!" and nothing.
  */
+
+void close_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<okapi::AsyncPositionController<double, double>> control) {
+	piston->set_value(false);
+	control->setTarget(0.25);
+	pros::delay(100);
+	piston->set_value(true);
+}
+
+void open_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<okapi::AsyncPositionController<double, double>> control) {
+	piston->set_value(false);
+	control->setTarget(0);
+	pros::delay(100);
+	piston->set_value(true);
+}
+
 void on_center_button()
 {
 	static bool pressed = false;
@@ -28,7 +43,6 @@ void on_center_button()
  */
 void initialize()
 {
-
 	ks.kP = 0.0010;
 	ks.kI = 0;
 	ks.kD = -0.000002;
@@ -49,12 +63,14 @@ void initialize()
 	back_rt.reset(new okapi::MotorGroup({back_rt1, back_rt2}));
 	back_lft.reset(new okapi::MotorGroup({back_lft1, back_lft2}));
 
+
+
 	drive_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2, back_lft1, back_lft2}));
 	drive_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2, back_rt1, back_rt2}));
 	chassis = okapi::ChassisControllerBuilder()
 				  .withMotors(drive_lft, drive_rt)
 				  // Green gearset, 4 in wheel diam, 11.5 in wheel track
-				  .withDimensions(okapi::AbstractMotor::gearset::green, {{2.75_in, 12_in}, okapi::imev5GreenTPR})
+				  .withDimensions({okapi::AbstractMotor::gearset::green, (5.0/3.0)}, {{3.25_in, 12.5_in}, okapi::imev5GreenTPR})
 				  .withGains(ks, ks)
 				  .build();
 
@@ -86,12 +102,12 @@ void initialize()
 	intake_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 	intake.reset(new okapi::MotorGroup({*intake_lft, *intake_rt}));
 
-	camera.reset(new pros::Vision(17));
+	camera.reset(new GoalCamera(17));
 
 	imu.reset(new pros::Imu(15));
 
 	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
-
+	partner.reset(new pros::Controller(pros::E_CONTROLLER_PARTNER));
 }
 
 /**
@@ -125,24 +141,63 @@ void competition_initialize() {}
  */
 void autonomous()
 {
-	// //Lift Gear ratio 1:5
-	lift_front_control->setTarget((3.0 / 8.0) * LIFT_GEAR_RATIO);
-	chassis->moveDistance(6_ft);
-	lift_front_control->setTarget(100.0 / 360.0 * LIFT_GEAR_RATIO);
-	pros::delay(1000);
-	lift_front_control->waitUntilSettled();
-	chassis->moveDistance(-4_ft);
-	chassis->waitUntilSettled();
-	chassis->moveDistance(1_ft);
-	chassis->waitUntilSettled();
-	lift_back_control->setTarget(-3.0 / 8.0 * LIFT_GEAR_RATIO);
-	chassis->turnAngle(-140_deg);
-	chassis->waitUntilSettled();
-	chassis->moveDistance(-3_ft);
-	chassis->waitUntilSettled();
-	lift_back_control->setTarget(-100.0 / 360.0 * LIFT_GEAR_RATIO);
-	chassis->moveDistance(3_ft);
-	intake->moveVoltage(12000);
+	chassis->stop();
+	if(SKILLS) {
+		double orig_vel = chassis->getMaxVelocity();
+		chassis->setMaxVelocity(100);
+		chassis->moveDistance(1_ft);
+		close_claw(front_claw_piston, front_claw_control);
+		lift_front_control->setTarget(FRONT_LIFT_MOVE);	
+		intake->moveVoltage(INTAKE_IN);
+		chassis->moveDistance(7_ft);
+		intake->moveVoltage(0);
+		chassis->turnAngle(-45_deg);
+		chassis->moveDistance(3_ft);
+		lift_back_control->setTarget(BACK_LIFT_DOWN);
+		chassis->turnAngle(-180_deg);
+		turn_to_goal(RED);
+		chassis->moveDistance(2_ft);
+		lift_back_control->setTarget(BACK_LIFT_UP);
+		chassis->moveDistance(-2_ft);
+		chassis->turnAngle(180_deg);
+		lift_front_control->setTarget(FRONT_LIFT_MAX);
+		chassis->moveDistance(2_ft);
+		lift_front_control->setTarget(FRONT_LIFT_PLAT);
+		open_claw(front_claw_piston, front_claw_control);
+		chassis->turnAngle(-135_deg);
+		lift_front_control->setTarget(FRONT_LIFT_DOWN);
+		chassis->moveDistance(4_ft);
+		close_claw(front_claw_piston, front_claw_control);
+		lift_front_control->setTarget(FRONT_LIFT_PLAT);
+		chassis->moveDistance(4_ft);
+		chassis->turnAngle(-45_deg);
+		chassis->moveDistance(2_ft);
+		chassis->turnAngle(135_deg);
+		chassis->moveDistance(2_ft);
+		lift_front_control->setTarget(FRONT_LIFT_DOWN);
+		balance(chassis, imu);
+		chassis->setMaxVelocity(orig_vel);
+	}
+	else {
+		// //Lift Gear ratio 1:5
+		lift_front_control->setTarget((3.0 / 8.0) * FRONT_LIFT_GEAR_RATIO);
+		chassis->moveDistance(6_ft);
+		lift_front_control->setTarget(100.0 / 360.0 * FRONT_LIFT_GEAR_RATIO);
+		pros::delay(1000);
+		lift_front_control->waitUntilSettled();
+		chassis->moveDistance(-4_ft);
+		chassis->waitUntilSettled();
+		chassis->moveDistance(1_ft);
+		chassis->waitUntilSettled();
+		lift_back_control->setTarget(-3.0 / 8.0 * BACK_LIFT_GEAR_RATIO);
+		chassis->turnAngle(-140_deg);
+		chassis->waitUntilSettled();
+		chassis->moveDistance(-3_ft);
+		chassis->waitUntilSettled();
+		lift_back_control->setTarget(-100.0 / 360.0 * BACK_LIFT_GEAR_RATIO);
+		chassis->moveDistance(3_ft);
+		intake->moveVoltage(12000);
+	} 	
 }
 
 /**
@@ -187,16 +242,16 @@ void opcontrol()
 		front_lft->moveVoltage((y - x - z) / 127 * 11000);
 		back_lft->moveVoltage((y + x - z) / 127 * 11000);
 
-		// if(master->get_digital(DIGITAL_A)) {
-		// 	lift_back_control->setTarget((2.0/8.0)*BACK_LIFT_GEAR_RATIO);
-		// }
-		// else if(master->get_digital(DIGITAL_B)) {
-		// 	lift_back_control->setTarget(45.0/360.0*BACK_LIFT_GEAR_RATIO);
-		// } else 
-		if(master->get_digital(DIGITAL_L2)){
+		if(master->get_digital(DIGITAL_L2)) {
+			lift_back_control->setTarget((2.0/8.0)*BACK_LIFT_GEAR_RATIO);
+		}
+		else if(master->get_digital(DIGITAL_L1)) {
+			lift_back_control->setTarget(45.0/360.0*BACK_LIFT_GEAR_RATIO);
+		} else 
+		if(partner->get_digital(DIGITAL_L2)){
 			lift_back->moveVelocity(1000);
 		}
-		else if (master->get_digital(DIGITAL_L1))
+		else if (partner->get_digital(DIGITAL_L1))
 		{
 			lift_back->moveVelocity(-1000);
 		}
@@ -205,19 +260,20 @@ void opcontrol()
 			lift_back->moveVelocity(0);
 		}
 
-		if(master->get_digital(DIGITAL_X)) {
+		if(master->get_digital(DIGITAL_R2)) {
 			lift_front_control->setTarget((-3.0/8.0)*BACK_LIFT_GEAR_RATIO);
 			// front_claw_control->setTarget(0);
 		}
-		else if(master->get_digital(DIGITAL_Y)) {
+		else if(master->get_digital(DIGITAL_R1)) {
 			lift_front_control->setTarget(-100.0/360.0*BACK_LIFT_GEAR_RATIO);
 			// front_claw_control->setTarget(1.0/4.0);
 		}
-		else if (master->get_digital(DIGITAL_R2))
+		else 
+		if (partner->get_digital(DIGITAL_R2))
 		{
 			lift_front->moveVelocity(-1000);
 		}
-		else if (master->get_digital(DIGITAL_R1))
+		else if (partner->get_digital(DIGITAL_R1))
 		{
 			lift_front->moveVelocity(1000);
 		}
@@ -245,13 +301,6 @@ void opcontrol()
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
-		}
-
-		if (chassis_hold)
-		{
-		}
-		else
-		{
 		}
 
 		// Intake
@@ -309,6 +358,14 @@ void opcontrol()
 			front_claw_piston->set_value(true);
 		}
 
+		if(master->get_digital(DIGITAL_Y)) {
+			turn_to_goal(camera, drive_lft, drive_rt, BLUE);
+		}
+
+		if(master->get_digital(DIGITAL_X)) {
+			balance(chassis, imu, CHASSIS_GEAR_RATIO);
+		}
+
 		pros::delay(20);
 
 		if (delay > 0)
@@ -321,5 +378,6 @@ void opcontrol()
 		if(back_claw_timer > 0) {
 			back_claw_timer = back_claw_timer - 20;
 		}   
+
 	}
 }
