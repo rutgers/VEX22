@@ -95,12 +95,14 @@ void initialize()
 	back_claw_control = okapi::AsyncPosControllerBuilder().withMotor(back_claw).build();
 
 	front_claw_piston.reset(new pros::ADIDigitalOut('A'));
-	front_claw_motor.reset(new okapi::Motor(14, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
+	front_claw_motor.reset(new okapi::Motor(16, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	front_claw_control = okapi::AsyncPosControllerBuilder().withMotor(front_claw_motor).build();
+	front_claw_motor->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 
 	intake_lft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 	intake_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 	intake.reset(new okapi::MotorGroup({*intake_lft, *intake_rt}));
+	intake->setBrakeMode(okapi::AbstractMotor::brakeMode::coast)
 
 	camera.reset(new GoalCamera(17));
 
@@ -142,6 +144,7 @@ void competition_initialize() {}
 void autonomous()
 {
 	chassis->stop();
+	chassis->setMaxVelocity(200);
 	if(SKILLS) {
 		double orig_vel = chassis->getMaxVelocity();
 		chassis->setMaxVelocity(100);
@@ -155,7 +158,7 @@ void autonomous()
 		chassis->moveDistance(3_ft);
 		lift_back_control->setTarget(BACK_LIFT_DOWN);
 		chassis->turnAngle(-180_deg);
-		turn_to_goal(RED);
+		turn_to_goal(camera, drive_lft, drive_rt, RED);
 		chassis->moveDistance(2_ft);
 		lift_back_control->setTarget(BACK_LIFT_UP);
 		chassis->moveDistance(-2_ft);
@@ -179,24 +182,34 @@ void autonomous()
 		chassis->setMaxVelocity(orig_vel);
 	}
 	else {
-		// //Lift Gear ratio 1:5
-		lift_front_control->setTarget((3.0 / 8.0) * FRONT_LIFT_GEAR_RATIO);
+		// Grab yellow
+		lift_front_control->setTarget(FRONT_LIFT_DOWN);
 		chassis->moveDistance(6_ft);
-		lift_front_control->setTarget(100.0 / 360.0 * FRONT_LIFT_GEAR_RATIO);
-		pros::delay(1000);
-		lift_front_control->waitUntilSettled();
+		close_claw(front_claw_piston, front_claw_control);
+		lift_front_control->setTarget(FRONT_LIFT_MOVE);
 		chassis->moveDistance(-4_ft);
-		chassis->waitUntilSettled();
 		chassis->moveDistance(1_ft);
-		chassis->waitUntilSettled();
-		lift_back_control->setTarget(-3.0 / 8.0 * BACK_LIFT_GEAR_RATIO);
+
+		// Grab Blue
+		lift_back_control->setTarget(BACK_LIFT_DOWN);
 		chassis->turnAngle(-140_deg);
 		chassis->waitUntilSettled();
 		chassis->moveDistance(-3_ft);
 		chassis->waitUntilSettled();
-		lift_back_control->setTarget(-100.0 / 360.0 * BACK_LIFT_GEAR_RATIO);
+		lift_back_control->setTarget(BACK_LIFT_UP);
 		chassis->moveDistance(3_ft);
+
+		// Pick Up Rings
+		chassis->turnAngle(-45_deg);
 		intake->moveVoltage(12000);
+		lift_front_control->setTarget(FRONT_LIFT_MAX);
+
+		chassis->setMaxVelocity(75);
+		chassis->moveDistance(-1_ft);
+		while(true) {
+			chassis->moveDistance(1.5_ft);
+			chassis->moveDistance(-1.5_ft);
+		}
 	} 	
 }
 
@@ -216,6 +229,7 @@ void autonomous()
 void opcontrol()
 {
 	chassis->stop();
+	chassis->setMaxVelocity(200);
 	int intake_flag = 0;
 	int delay = 0;
 	int front_claw_timer = 0;
@@ -243,10 +257,10 @@ void opcontrol()
 		back_lft->moveVoltage((y + x - z) / 127 * 11000);
 
 		if(master->get_digital(DIGITAL_L2)) {
-			lift_back_control->setTarget((2.0/8.0)*BACK_LIFT_GEAR_RATIO);
+			lift_back_control->setTarget(BACK_LIFT_DOWN);
 		}
 		else if(master->get_digital(DIGITAL_L1)) {
-			lift_back_control->setTarget(45.0/360.0*BACK_LIFT_GEAR_RATIO);
+			lift_back_control->setTarget(BACK_LIFT_UP);
 		} else 
 		if(partner->get_digital(DIGITAL_L2)){
 			lift_back->moveVelocity(1000);
@@ -261,11 +275,11 @@ void opcontrol()
 		}
 
 		if(master->get_digital(DIGITAL_R2)) {
-			lift_front_control->setTarget((-3.0/8.0)*BACK_LIFT_GEAR_RATIO);
+			lift_front_control->setTarget(FRONT_LIFT_DOWN);
 			// front_claw_control->setTarget(0);
 		}
 		else if(master->get_digital(DIGITAL_R1)) {
-			lift_front_control->setTarget(-100.0/360.0*BACK_LIFT_GEAR_RATIO);
+			lift_front_control->setTarget(FRONT_LIFT_PLAT);
 			// front_claw_control->setTarget(1.0/4.0);
 		}
 		else 
@@ -331,31 +345,33 @@ void opcontrol()
 		}
 
 		if(front_claw_timer <= 0 && master->get_digital(DIGITAL_B)) {
-			front_claw_piston->set_value(false);
-
-			if(!front_flag) {
-				front_claw_control->setTarget(0.25);
-			}
-			else {
-				front_claw_control->setTarget(0);
-			}
-			front_claw_timer = 300;
+			front_claw_piston->set_value(true);
+			
+			front_claw_timer = 500;
 			front_flag = !front_flag;
+		}
+		else if(front_claw_timer <= 0) {
+			front_claw_piston->set_value(false);
+		}
+
+		if(!front_flag) {
+				front_claw_control->setTarget(FRONT_CLAW_DOWN);
+		}
+		else {
+			front_claw_control->setTarget(0);
 		}
 
 		if(back_claw_timer <= 0 && master->get_digital(DIGITAL_A)) {
 			if(!back_flag) {
-				back_claw_control->setTarget(0.25);
+				back_claw_control->setTarget(BACK_CLAW_DOWN);
+				back_claw->setBrakeMode(okapi::AbstractMotor::brakeMode::brake)
 			}
 			else {
 				back_claw_control->setTarget(0);
+				back_claw->setBrakeMode(okapi::AbstractMotor::brakeMode::coast)
 			}
 			back_claw_timer = 300;
 			back_flag = !back_flag;
-		}
-		
-		if(front_claw_control->isSettled()){
-			front_claw_piston->set_value(true);
 		}
 
 		if(master->get_digital(DIGITAL_Y)) {
@@ -363,7 +379,7 @@ void opcontrol()
 		}
 
 		if(master->get_digital(DIGITAL_X)) {
-			balance(chassis, imu, CHASSIS_GEAR_RATIO);
+			balance(chassis, imu);
 		}
 
 		pros::delay(20);

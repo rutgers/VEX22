@@ -23,19 +23,27 @@ void turn_to_goal(std::shared_ptr<GoalCamera> camera,
     int settled_time = 0;
     int dt = 10;
     int settled_thresh = 0;
-    while(abs(x) > err_thresh || settled_thresh >= 150) {
+    int total_time = 0;
+    double kp = 9000;
+    double ki = 50;
+    while(total_time < 2000 && (abs(x) > err_thresh || settled_thresh <= 150)) {
         std::tie(x, y) = camera->get_by_sig(c);
         double v_prop = x/VISION_FOV_WIDTH*2;
-        lft->moveVoltage(5000*v_prop);
-        rt->moveVoltage(-5000*v_prop);
+        double sign = 1;
+        if(v_prop < 0){
+            sign = -1;
+        }
+        lft->moveVoltage(-kp*v_prop - ki*dt*sign);
+        rt->moveVoltage(kp*v_prop + ki*dt*sign);
 
-        if(abs(x) > err_thresh) {
+        if(abs(x) < err_thresh) {
             settled_time += dt;
         }
         else {
             settled_time = 0;
         }
         pros::delay(dt);
+        total_time += dt;
     }
     lft->moveVoltage(0);
     rt->moveVoltage(0);
