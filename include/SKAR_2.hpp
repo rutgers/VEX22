@@ -1,8 +1,36 @@
+#ifndef MAIN_H
+#define MAIN_H
 #include "main.h"
+#endif
+#ifndef OKAPI_H
+#define OKAPI_H
 #include "okapi/api.hpp"
-#include <vector>
-float BACK_LIFT_GEAR_RATIO = 5.0/3.0;
+#endif
+#ifndef VISION_CPP
+#define VISION_CPP
+#include "vision.cpp"
+#endif
+#ifndef AUTON_CPP
+#define AUTON_CPP
+#include "auton_util.cpp"
+#endif
+
+
+float BACK_LIFT_GEAR_RATIO = 5.0/1.0;
+float FRONT_LIFT_GEAR_RATIO = 7.0/1.0;
 float CHASSIS_GEAR_RATIO = 3.0/5.0;
+double FRONT_LIFT_MAX = 90.0/360.0*FRONT_LIFT_GEAR_RATIO;
+double FRONT_LIFT_PLAT = 60.0/360.0*FRONT_LIFT_GEAR_RATIO;
+double FRONT_LIFT_DOWN = 2.5/360.0*FRONT_LIFT_GEAR_RATIO;
+double FRONT_LIFT_MOVE = 20.0/360.0*FRONT_LIFT_GEAR_RATIO;
+
+double BACK_LIFT_DOWN = 90.0/360.0*BACK_LIFT_GEAR_RATIO;
+double BACK_LIFT_UP = 50.0/360.0*BACK_LIFT_GEAR_RATIO;
+
+double BACK_CLAW_DOWN = -100.0/360.0;
+double FRONT_CLAW_DOWN = (135.0/360.0);
+int INTAKE_IN = -12000;
+int INTAKE_OUT = 12000;
 
 std::shared_ptr<okapi::Motor> front_rt1;
 std::shared_ptr<okapi::Motor> front_rt2;
@@ -47,8 +75,9 @@ std::shared_ptr<pros::ADIDigitalOut> front_claw_piston;
 std::shared_ptr<okapi::Motor> front_claw_motor;
 std::shared_ptr<okapi::AsyncPositionController<double, double>> front_claw_control;
 
-std::shared_ptr<pros::Vision> camera;
+std::shared_ptr<GoalCamera> camera;
  
 std::shared_ptr<pros::Imu> imu;
 
 std::shared_ptr<pros::Controller> master;
+std::shared_ptr<pros::Controller> partner;
