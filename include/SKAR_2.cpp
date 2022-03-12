@@ -9,16 +9,18 @@
 
 void close_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<okapi::AsyncPositionController<double, double>> control) {
 	piston->set_value(false);
-	control->setTarget(0.25);
-	pros::delay(100);
+	control->setTarget(FRONT_CLAW_DOWN);
+	pros::delay(250);
 	piston->set_value(true);
+	pros::delay(250);
 }
 
 void open_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<okapi::AsyncPositionController<double, double>> control) {
 	piston->set_value(false);
 	control->setTarget(0);
-	pros::delay(100);
+	pros::delay(250);
 	piston->set_value(true);
+	pros::delay(250);
 }
 
 void on_center_button()
@@ -43,10 +45,19 @@ void on_center_button()
  */
 void initialize()
 {
-	ks.kP = 0.0010;
-	ks.kI = 0;
-	ks.kD = -0.000002;
-	ks.kBias = 0;
+
+	if(SKILLS) {
+		ks.kP = 0.002;
+		ks.kI = 0;
+		ks.kD = 0;//-0.00001;
+		ks.kBias = 0;
+	}
+	else {
+		ks.kP = 0.00064;
+		ks.kI = 0;
+		ks.kD = 0;//-0.00001;
+		ks.kBias = 0;
+	}
 
 	// Drive Motors
 	front_rt1.reset(new okapi::Motor(12, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
@@ -70,7 +81,7 @@ void initialize()
 	chassis = okapi::ChassisControllerBuilder()
 				  .withMotors(drive_lft, drive_rt)
 				  // Green gearset, 4 in wheel diam, 11.5 in wheel track
-				  .withDimensions({okapi::AbstractMotor::gearset::green, (5.0/3.0)}, {{3.25_in, 12.5_in}, okapi::imev5GreenTPR})
+				  .withDimensions({okapi::AbstractMotor::gearset::green, (3.0/5.0)}, {{3.25_in, 12.5_in}, okapi::imev5GreenTPR})
 				  .withGains(ks, ks)
 				  .build();
 
@@ -80,6 +91,7 @@ void initialize()
 	lift_front->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
 	lift_front_control = okapi::AsyncPosControllerBuilder().withMotor(*lift_front).build();
+	lift_front_control->setTarget(FRONT_LIFT_INIT);
 
 	lift_back_lft.reset(new okapi::Motor(8, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
 	lift_back_rt.reset(new okapi::Motor(3, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations));
@@ -97,16 +109,17 @@ void initialize()
 	front_claw_piston.reset(new pros::ADIDigitalOut('A'));
 	front_claw_motor.reset(new okapi::Motor(16, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	front_claw_control = okapi::AsyncPosControllerBuilder().withMotor(front_claw_motor).build();
-	front_claw_motor->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 
 	intake_lft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 	intake_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 	intake.reset(new okapi::MotorGroup({*intake_lft, *intake_rt}));
-	intake->setBrakeMode(okapi::AbstractMotor::brakeMode::coast)
+	intake->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 
 	camera.reset(new GoalCamera(17));
 
 	imu.reset(new pros::Imu(15));
+
+	dist_sensor.reset(new pros::Distance(16));
 
 	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
 	partner.reset(new pros::Controller(pros::E_CONTROLLER_PARTNER));
@@ -143,72 +156,135 @@ void competition_initialize() {}
  */
 void autonomous()
 {
+	lift_front_control->tarePosition();
+	lift_back_control->tarePosition();
+	front_claw_control->tarePosition();
+	back_claw_control->tarePosition();
 	chassis->stop();
 	chassis->setMaxVelocity(200);
 	if(SKILLS) {
-		double orig_vel = chassis->getMaxVelocity();
-		chassis->setMaxVelocity(100);
-		chassis->moveDistance(1_ft);
+		int move_vel = 60;
+		chassis->setMaxVelocity(move_vel);
+
+		back_claw_control->setTarget(BACK_CLAW_DOWN);
+		pros::delay(250);
+		back_claw_control->setTarget(0);
+
+
+		// Grab Our Side
+		lift_front_control->setTarget(FRONT_LIFT_DOWN);	
+		chassis->moveDistance(1.75_ft);
 		close_claw(front_claw_piston, front_claw_control);
 		lift_front_control->setTarget(FRONT_LIFT_MOVE);	
 		intake->moveVoltage(INTAKE_IN);
-		chassis->moveDistance(7_ft);
+		chassis->moveDistance(5_ft);
 		intake->moveVoltage(0);
-		chassis->turnAngle(-45_deg);
-		chassis->moveDistance(3_ft);
+
+		// Grab Opposing side on Balance
+		chassis->turnAngle(-40_deg);
+		chassis->moveDistance(1.5_ft);
+		lift_front_control->setTarget(FRONT_LIFT_PLAT);	
+		pros::delay(1000);
+		chassis->turnAngle(-200_deg);
+		turn_to_goal(camera, drive_lft, drive_rt, BLUE);
+		chassis->moveDistance(0.75_ft);
 		lift_back_control->setTarget(BACK_LIFT_DOWN);
-		chassis->turnAngle(-180_deg);
-		turn_to_goal(camera, drive_lft, drive_rt, RED);
-		chassis->moveDistance(2_ft);
+		pros::delay(1000);
+		chassis->setMaxVelocity(50);
+		chassis->moveDistanceAsync(-2_ft);
+		pros::delay(3000);
+		chassis->stop();
+		chassis->setMaxVelocity(move_vel);
 		lift_back_control->setTarget(BACK_LIFT_UP);
-		chassis->moveDistance(-2_ft);
-		chassis->turnAngle(180_deg);
-		lift_front_control->setTarget(FRONT_LIFT_MAX);
-		chassis->moveDistance(2_ft);
-		lift_front_control->setTarget(FRONT_LIFT_PLAT);
+		back_claw_control->setTarget(BACK_CLAW_DOWN);
+		chassis->moveDistance(1.2_ft);
+		
+		// Place Our Side
+		chassis->turnAngle(135_deg);
+		intake->moveVoltage(INTAKE_IN);
+		chassis->moveDistance(2.75_ft);
+		chassis->turnAngle(90_deg);
+		chassis->moveDistanceAsync(1.25_ft);
+		pros::delay(2000);
 		open_claw(front_claw_piston, front_claw_control);
-		chassis->turnAngle(-135_deg);
+		pros::delay(1000);
+		intake->moveVoltage(0);
+
+		// Grab Yellow
+		chassis->moveDistance(-0.5_ft);
+		chassis->turnAngle(-100_deg);
+		chassis->moveDistance(-1.75_ft);
+		chassis->turnAngle(-80_deg);
 		lift_front_control->setTarget(FRONT_LIFT_DOWN);
-		chassis->moveDistance(4_ft);
+		pros::delay(1000);
+		chassis->moveDistance(3.5_ft);
 		close_claw(front_claw_piston, front_claw_control);
 		lift_front_control->setTarget(FRONT_LIFT_PLAT);
+
+		//Move to balance
 		chassis->moveDistance(4_ft);
-		chassis->turnAngle(-45_deg);
-		chassis->moveDistance(2_ft);
-		chassis->turnAngle(135_deg);
-		chassis->moveDistance(2_ft);
-		lift_front_control->setTarget(FRONT_LIFT_DOWN);
-		balance(chassis, imu);
-		chassis->setMaxVelocity(orig_vel);
+		chassis->turnAngle(-60_deg);
+		chassis->moveDistanceAsync(4_ft);
+		// pros::delay(3000);
+		// chassis->moveDistance(-2_ft);
+		// chassis->turnAngle(210_deg);
+		// chassis->moveDistance(1_ft);
+		// lift_front_control->setTarget(FRONT_LIFT_DOWN);
+		// balance(chassis, imu);
+
 	}
 	else {
 		// Grab yellow
+		// lift_front_control->setTarget(FRONT_LIFT_DOWN);
+		// chassis->moveDistance(4.8_ft);
+		// close_claw(front_claw_piston, front_claw_control);
+		// //lift_front_control->setTarget(FRONT_LIFT_MOVE);
+		// chassis->setMaxVelocity(150);
+
+		//Grab Yellow
+		int DIST = 24.5;
+		drive_rt->moveVoltage(12000);
+		drive_lft->moveVoltage(12000);
 		lift_front_control->setTarget(FRONT_LIFT_DOWN);
-		chassis->moveDistance(6_ft);
+		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+		
+		while(dist_sensor->get() < DIST) {
+			pros::delay(20);
+		}
+		drive_rt->moveVoltage(0);
+		drive_lft->moveVoltage(0);
 		close_claw(front_claw_piston, front_claw_control);
-		lift_front_control->setTarget(FRONT_LIFT_MOVE);
-		chassis->moveDistance(-4_ft);
-		chassis->moveDistance(1_ft);
+		pros::delay(50);
+		chassis->moveDistance(-3_ft);
 
 		// Grab Blue
-		lift_back_control->setTarget(BACK_LIFT_DOWN);
-		chassis->turnAngle(-140_deg);
+
+		back_claw_control->setTarget(BACK_CLAW_DOWN);
+		pros::delay(250);
+		back_claw_control->setTarget(0);
+
+		chassis->turnAngle(-100_deg);
 		chassis->waitUntilSettled();
-		chassis->moveDistance(-3_ft);
+		if(AUTON_COLOR == BLUE) {
+			turn_to_goal(camera, drive_lft, drive_rt, AUTON_COLOR);
+		}
+		lift_back_control->setTarget(BACK_LIFT_DOWN);
+		chassis->moveDistance(1_ft);
+		chassis->moveDistance(-2_ft);
 		chassis->waitUntilSettled();
 		lift_back_control->setTarget(BACK_LIFT_UP);
-		chassis->moveDistance(3_ft);
+		chassis->moveDistance(1_ft);
 
 		// Pick Up Rings
-		chassis->turnAngle(-45_deg);
+		chassis->turnAngle(-110_deg);
 		intake->moveVoltage(12000);
-		lift_front_control->setTarget(FRONT_LIFT_MAX);
+		lift_front_control->setTarget(FRONT_LIFT_PLAT);
 
-		chassis->setMaxVelocity(75);
-		chassis->moveDistance(-1_ft);
+		chassis->moveDistance(.75_ft);
 		while(true) {
-			chassis->moveDistance(1.5_ft);
-			chassis->moveDistance(-1.5_ft);
+			chassis->moveDistance(1_ft);
+			chassis->moveDistance(-1_ft);
 		}
 	} 	
 }
@@ -242,7 +318,7 @@ void opcontrol()
 	bool piston_flag = false;
 
 	int double_tap = 0;
-
+	int move_volt = 11000;
 	while (true)
 	{
 
@@ -251,10 +327,10 @@ void opcontrol()
 		double x = 0;//master->get_analog(ANALOG_LEFT_X);
 		double z = -master->get_analog(ANALOG_RIGHT_X);
 
-		front_rt->moveVoltage((y + x + z) / 127 * 11000);
-		back_rt->moveVoltage((y - x + z) / 127 * 11000);
-		front_lft->moveVoltage((y - x - z) / 127 * 11000);
-		back_lft->moveVoltage((y + x - z) / 127 * 11000);
+		front_rt->moveVoltage((y + x + z) / 127 * move_volt);
+		back_rt->moveVoltage((y - x + z) / 127 * move_volt);
+		front_lft->moveVoltage((y - x - z) / 127 * move_volt);
+		back_lft->moveVoltage((y + x - z) / 127 * move_volt);
 
 		if(master->get_digital(DIGITAL_L2)) {
 			lift_back_control->setTarget(BACK_LIFT_DOWN);
@@ -306,15 +382,13 @@ void opcontrol()
 		{
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+			move_volt = 25000;
 		}
 		else
 		{
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
-			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
-			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
+			move_volt = 11000;
 		}
 
 		// Intake
@@ -354,7 +428,7 @@ void opcontrol()
 			front_claw_piston->set_value(false);
 		}
 
-		if(!front_flag) {
+		if(front_flag) {
 				front_claw_control->setTarget(FRONT_CLAW_DOWN);
 		}
 		else {
@@ -364,23 +438,23 @@ void opcontrol()
 		if(back_claw_timer <= 0 && master->get_digital(DIGITAL_A)) {
 			if(!back_flag) {
 				back_claw_control->setTarget(BACK_CLAW_DOWN);
-				back_claw->setBrakeMode(okapi::AbstractMotor::brakeMode::brake)
+				back_claw->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 			}
 			else {
 				back_claw_control->setTarget(0);
-				back_claw->setBrakeMode(okapi::AbstractMotor::brakeMode::coast)
+				back_claw->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			}
 			back_claw_timer = 300;
 			back_flag = !back_flag;
 		}
 
-		if(master->get_digital(DIGITAL_Y)) {
-			turn_to_goal(camera, drive_lft, drive_rt, BLUE);
-		}
+		// if(master->get_digital(DIGITAL_Y)) {
+		// 	turn_to_goal(camera, drive_lft, drive_rt, AUTON_COLOR);
+		// }
 
-		if(master->get_digital(DIGITAL_X)) {
-			balance(chassis, imu);
-		}
+		// if(master->get_digital(DIGITAL_X)) {
+		// 	balance(chassis, imu);
+		// }
 
 		pros::delay(20);
 

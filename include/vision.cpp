@@ -22,7 +22,8 @@ class GoalCamera {
         vision_sensor.reset(new pros::Vision(port, pros::E_VISION_ZERO_CENTER));
 
         pros::vision_signature_s_t RED_SIG =
-            pros::Vision::signature_from_utility(RED, 8717, 11443, 10080, -2329, -1959, -2144, 3.000, 0);
+            pros::Vision::signature_from_utility(RED, 10091, 11357, 10724, -2207, -1527, -1867, 3.000, 0);
+            //pros::Vision::signature_from_utility(RED, 8717, 11443, 10080, -2329, -1959, -2144, 3.000, 0);
 
         pros::vision_signature_s_t YELLOW_SIG =
             pros::Vision::signature_from_utility(YELLOW, 3295, 5517, 4406, -4699, -4415, -4557, 3.000, 0);
@@ -46,4 +47,3 @@ class GoalCamera {
         return std::make_tuple(x, y);
     }
 };
-

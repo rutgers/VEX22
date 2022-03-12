@@ -2,7 +2,8 @@
 #define SKAR_2 3
 #define SKAR_3 4
 
-#define SKILLS true
+#define SKILLS false
+#define AUTON_COLOR RED
 #define BUILD_TARGET SKAR_2 //SKAR_1 or SKAR_2
 //#define AUTON_SIDE RED //RED OR BLUE
 // #if BUILD_TARGET == SKAR_1
