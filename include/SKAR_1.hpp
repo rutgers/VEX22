@@ -2,8 +2,10 @@
 #include "okapi/api.hpp"
 #include <vector>
 
-// Tank Control Swap
-#define TANK 1
+#ifndef AUTON_CPP
+#define AUTON_CPP
+#include "auton_util.cpp"
+#endif
 
 // PID Control
 okapi::IterativePosPIDController::Gains ks; 
@@ -35,6 +37,7 @@ std::shared_ptr<okapi::AsyncPositionController<double, double>> back_lift_contro
 std::shared_ptr<okapi::Motor> frontLftLift;
 std::shared_ptr<okapi::Motor> frontRtLift;
 std::shared_ptr<okapi::MotorGroup> front_lift;
+std::shared_ptr<okapi::AsyncPositionController<double, double>> front_lift_control;
 
 // Intake Initializations
 std::shared_ptr<okapi::Motor> intake;
@@ -44,3 +47,9 @@ std::shared_ptr<pros::Controller> master;
 
 // Piston Initializations
 std::shared_ptr<pros::ADIDigitalOut> piston;
+
+// Camera Initialization
+std::shared_ptr<GoalCamera> camera;
+
+// IMU Initialization
+std::shared_ptr<pros::Imu> imu;

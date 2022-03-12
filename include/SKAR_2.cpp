@@ -63,8 +63,6 @@ void initialize()
 	back_rt.reset(new okapi::MotorGroup({back_rt1, back_rt2}));
 	back_lft.reset(new okapi::MotorGroup({back_lft1, back_lft2}));
 
-
-
 	drive_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2, back_lft1, back_lft2}));
 	drive_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2, back_rt1, back_rt2}));
 	chassis = okapi::ChassisControllerBuilder()
