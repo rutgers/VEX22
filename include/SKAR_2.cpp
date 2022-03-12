@@ -98,9 +98,10 @@ void initialize()
 
 	lift_back_control = okapi::AsyncPosControllerBuilder().withMotor(lift_back).build();
 
-	back_claw_lft.reset(new okapi::Motor(7, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	back_claw_rt.reset(new okapi::Motor(4, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	back_claw.reset(new okapi::MotorGroup({*back_claw_lft, *back_claw_rt}));
+	// back_claw_lft.reset(new okapi::Motor(7, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	// back_claw_rt.reset(new okapi::Motor(4, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	// back_claw.reset(new okapi::MotorGroup({*back_claw_lft, *back_claw_rt}));
+	back_claw.reset(new okapi::Motor(7, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	back_claw->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 	back_claw_control = okapi::AsyncPosControllerBuilder().withMotor(back_claw).build();
 

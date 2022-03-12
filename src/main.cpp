@@ -7,19 +7,13 @@
 // Auton Color
 //#define AUTON_COLOR BLUE
 char*auton_color = getenv("AUTON_COLOR");
+printf("%s", auton_color);
 
 // Skills color
 #define SKILLS_COLOR YELLOW
 
 // Initial speed for auton
 #define AUTON_INIT 165
-
-// Auton Side for Mobile Goals
-#define AUTON_SIDE RED //RED OR BLUE
-
-// Tank Control Swap
-//#define TANK true // TRUE is Tank Drive and FALSE is Regular
-bool tank = (bool) getenv("TANK");
 
 // Skills Swap
 #define SKILLS false // TRUE is Skills and FALSE is Regular
@@ -29,6 +23,9 @@ bool tank = (bool) getenv("TANK");
 
 // Build Target
 #if BUILD_TARGET == SKAR_1
+    // Tank Control Swap
+    //#define TANK true // TRUE is Tank Drive and FALSE is Regular
+    bool tank = (bool) getenv("TANK");
     #include "SKAR_1.cpp"
 #endif
 #if BUILD_TARGET == SKAR_2

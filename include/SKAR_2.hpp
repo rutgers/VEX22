@@ -63,9 +63,10 @@ std::shared_ptr<okapi::Motor> lift_back_rt;
 std::shared_ptr<okapi::MotorGroup> lift_back;
 std::shared_ptr<okapi::AsyncPositionController<double, double>> lift_back_control;
 
-std::shared_ptr<okapi::Motor> back_claw_lft;
-std::shared_ptr<okapi::Motor> back_claw_rt;
-std::shared_ptr<okapi::MotorGroup> back_claw;
+//std::shared_ptr<okapi::Motor> back_claw_lft;
+//std::shared_ptr<okapi::Motor> back_claw_rt;
+//std::shared_ptr<okapi::MotorGroup> back_claw;
+std::shared_ptr<okapi::Motor> back_claw;
 std::shared_ptr<okapi::AsyncPositionController<double, double>> back_claw_control;
 
 std::shared_ptr<okapi::Motor> intake_lft;
