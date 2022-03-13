@@ -17,7 +17,7 @@ void close_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<oka
 
 void open_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<okapi::AsyncPositionController<double, double>> control) {
 	piston->set_value(false);
-	control->setTarget(0);
+	control->setTarget(FRONT_CLAW_UP);
 	pros::delay(250);
 	piston->set_value(true);
 	pros::delay(250);
@@ -246,45 +246,71 @@ void autonomous()
 		int DIST = 28;
 		drive_rt->moveVoltage(12000);
 		drive_lft->moveVoltage(12000);
+		lift_front_control->setTarget(FRONT_LIFT_MOVE);
+		pros::delay(50);
+		front_claw_control->setTarget(FRONT_CLAW_UP);
+		pros::delay(50);
 		lift_front_control->setTarget(FRONT_LIFT_DOWN);
+		int move_time = 100;
+
 		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-		
-		while(dist_sensor->get() > DIST) {
-			if(dist_sensor->get() < 500) {
+		int MAX_TIME = 1400;
+		while((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME) {
+			if(dist_sensor->get() < 400) {
 				drive_rt->moveVoltage(6000);
 				drive_lft->moveVoltage(6000);
 			}
 			pros::delay(5);
+			move_time += 5;
 		}
 		drive_rt->moveVoltage(0);
 		drive_lft->moveVoltage(0);
 		close_claw(front_claw_piston, front_claw_control, 0);
 		pros::delay(150);
 		lift_front_control->setTarget(FRONT_LIFT_MOVE);
-		chassis->moveDistance(-3_ft);
-		return;
 
-		// Grab Blue
-
-		back_claw_control->setTarget(BACK_CLAW_DOWN);
-		pros::delay(250);
-		back_claw_control->setTarget(0);
-
-		chassis->turnAngle(-100_deg);
-		chassis->waitUntilSettled();
-		if(selector::auton < 1){
-			turn_to_goal(camera, drive_lft, drive_rt, BLUE);
+		// We're on the left
+		if(selector::auton == 1) {
+			chassis->moveDistance(-4.5_ft);
+			lift_front_control->setTarget(FRONT_LIFT_PLAT);
+			pros::delay(1000);
+			chassis->turnAngle(-90_deg);
+			if(selector::auton < 0){
+				turn_to_goal(camera, drive_lft, drive_rt, BLUE);
+			}
+			lift_back_control->setTarget(BACK_LIFT_DOWN);
+			pros::delay(1500);
+			chassis->moveDistance(-2_ft);
+			lift_back_control->setTarget(BACK_LIFT_UP);
+			chassis->moveDistance(2_ft);
+			chassis->turnAngle(-110_deg);
 		}
-		lift_back_control->setTarget(BACK_LIFT_DOWN);
-		chassis->moveDistance(1_ft);
-		chassis->moveDistance(-2_ft);
-		chassis->waitUntilSettled();
-		lift_back_control->setTarget(BACK_LIFT_UP);
-		chassis->moveDistance(1_ft);
+		// We're on the right
+		else {
+			chassis->moveDistance(-3_ft);
 
-		// Pick Up Rings
-		chassis->turnAngle(-110_deg);
+			// Grab Blue
+
+			back_claw_control->setTarget(BACK_CLAW_DOWN);
+			pros::delay(250);
+			back_claw_control->setTarget(0);
+
+			chassis->turnAngle(-100_deg);
+			chassis->waitUntilSettled();
+			if(selector::auton < 0){
+				turn_to_goal(camera, drive_lft, drive_rt, BLUE);
+			}
+			lift_back_control->setTarget(BACK_LIFT_DOWN);
+			chassis->moveDistance(1_ft);
+			chassis->moveDistance(-2_ft);
+			chassis->waitUntilSettled();
+			lift_back_control->setTarget(BACK_LIFT_UP);
+			chassis->moveDistance(1_ft);
+
+			// Pick Up Rings
+			chassis->turnAngle(-110_deg);
+		}
 		intake->moveVoltage(12000);
 		lift_front_control->setTarget(FRONT_LIFT_PLAT);
 
@@ -439,7 +465,7 @@ void opcontrol()
 				front_claw_control->setTarget(FRONT_CLAW_DOWN);
 		}
 		else {
-			front_claw_control->setTarget(0);
+			front_claw_control->setTarget(FRONT_CLAW_UP);
 		}
 
 		if(back_claw_timer <= 0 && master->get_digital(DIGITAL_A)) {
