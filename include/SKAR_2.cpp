@@ -260,6 +260,7 @@ void autonomous()
 			if(dist_sensor->get() < 400) {
 				drive_rt->moveVoltage(6000);
 				drive_lft->moveVoltage(6000);
+				MAX_TIME = MAX_TIME+3;
 			}
 			pros::delay(5);
 			move_time += 5;
@@ -271,14 +272,19 @@ void autonomous()
 		lift_front_control->setTarget(FRONT_LIFT_MOVE);
 
 		// We're on the left
-		if(selector::auton == 1) {
+		if(abs(selector::auton) == 1) {
 			chassis->moveDistance(-4.5_ft);
 			lift_front_control->setTarget(FRONT_LIFT_PLAT);
+			back_claw_control->setTarget(BACK_CLAW_DOWN);
+			chassis->setMaxVelocity(150);
+			pros::delay(250);
+			back_claw_control->setTarget(0);
 			pros::delay(1000);
 			chassis->turnAngle(-90_deg);
 			if(selector::auton < 0){
 				turn_to_goal(camera, drive_lft, drive_rt, BLUE);
 			}
+			chassis->moveDistance(0.5_ft);
 			lift_back_control->setTarget(BACK_LIFT_DOWN);
 			pros::delay(1500);
 			chassis->moveDistance(-2_ft);
