@@ -7,12 +7,12 @@
  * "I was pressed!" and nothing.
  */
 
-void close_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<okapi::AsyncPositionController<double, double>> control) {
+void close_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<okapi::AsyncPositionController<double, double>> control, int delay=250) {
 	piston->set_value(false);
 	control->setTarget(FRONT_CLAW_DOWN);
-	pros::delay(250);
+	pros::delay(delay);
 	piston->set_value(true);
-	pros::delay(250);
+	pros::delay(delay);
 }
 
 void open_claw(std::shared_ptr<pros::ADIDigitalOut> piston, std::shared_ptr<okapi::AsyncPositionController<double, double>> control) {
@@ -46,7 +46,9 @@ void on_center_button()
 void initialize()
 {
 
-	if(SKILLS) {
+	selector::init();
+
+	if(selector::auton == 0) {
 		ks.kP = 0.002;
 		ks.kI = 0;
 		ks.kD = 0;//-0.00001;
@@ -118,7 +120,7 @@ void initialize()
 
 	imu.reset(new pros::Imu(15));
 
-	dist_sensor.reset(new pros::Distance(16));
+	dist_sensor.reset(new pros::Distance(4));
 
 	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
 	partner.reset(new pros::Controller(pros::E_CONTROLLER_PARTNER));
@@ -161,7 +163,7 @@ void autonomous()
 	back_claw_control->tarePosition();
 	chassis->stop();
 	chassis->setMaxVelocity(200);
-	if(SKILLS) {
+	if(selector::auton == 0) {
 		int move_vel = 60;
 		chassis->setMaxVelocity(move_vel);
 
@@ -241,21 +243,27 @@ void autonomous()
 		// chassis->setMaxVelocity(150);
 
 		//Grab Yellow
-		int DIST = 24.5;
+		int DIST = 28;
 		drive_rt->moveVoltage(12000);
 		drive_lft->moveVoltage(12000);
 		lift_front_control->setTarget(FRONT_LIFT_DOWN);
 		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 		
-		while(dist_sensor->get() < DIST) {
-			pros::delay(20);
+		while(dist_sensor->get() > DIST) {
+			if(dist_sensor->get() < 500) {
+				drive_rt->moveVoltage(6000);
+				drive_lft->moveVoltage(6000);
+			}
+			pros::delay(5);
 		}
 		drive_rt->moveVoltage(0);
 		drive_lft->moveVoltage(0);
-		close_claw(front_claw_piston, front_claw_control);
-		pros::delay(50);
+		close_claw(front_claw_piston, front_claw_control, 0);
+		pros::delay(150);
+		lift_front_control->setTarget(FRONT_LIFT_MOVE);
 		chassis->moveDistance(-3_ft);
+		return;
 
 		// Grab Blue
 
@@ -265,8 +273,8 @@ void autonomous()
 
 		chassis->turnAngle(-100_deg);
 		chassis->waitUntilSettled();
-		if(AUTON_COLOR == BLUE) {
-			turn_to_goal(camera, drive_lft, drive_rt, AUTON_COLOR);
+		if(selector::auton < 1){
+			turn_to_goal(camera, drive_lft, drive_rt, BLUE);
 		}
 		lift_back_control->setTarget(BACK_LIFT_DOWN);
 		chassis->moveDistance(1_ft);
@@ -309,7 +317,7 @@ void opcontrol()
 	int delay = 0;
 	int front_claw_timer = 0;
 	int back_claw_timer = 0;
-	bool front_flag = false;
+	bool front_flag = true;
 	bool back_flag = true;
 	bool chassis_hold = false;
 
@@ -381,7 +389,7 @@ void opcontrol()
 		{
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-			move_volt = 25000;
+			move_volt = 6000;
 		}
 		else
 		{
