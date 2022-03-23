@@ -79,130 +79,159 @@ void autonomous() {
  */
 void opcontrol() {
 	
-	// Controller
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
+	pros::Motor motor1(15, true);
+	pros::Motor motor2(2, false);
+	pros::Motor motor3(5, true);
+	pros::Motor motor4(6, false);
 
-	// Drive Motors
+	while(true) {
+		int joystick_value = master.get_analog(ANALOG_RIGHT_Y);
+		int joystick_valueX = master.get_analog(ANALOG_RIGHT_X);
 
-	// Front Right Motors
-	okapi::Motor front_rt(5, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	
-	// Front Left Motors
-	okapi::Motor front_lft(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	
-	
-	// Back Right Motors
-	okapi::Motor back_rt(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	
-	// Back Left Motors
-	okapi::Motor back_lft(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	
-	// Group Motors
-	okapi::MotorGroup left({front_lft, back_lft});
-	okapi::MotorGroup right({front_rt, back_rt});
-	
-
-	// Chasis Motors Grouped
-	/* okapi::ChassisControllerBuilder()
-		.withMotors(drive_lft, drive_rt)
-		// Green gearset, 4 in wheel diam, 11.5 in wheel track
-		.withDimensions(okapi::AbstractMotor::gearset::blue, {{4_in, 11.5_in}, okapi::imev5BlueTPR})
-		.build(); */
-
-	// Claw Motors
-	/* okapi::Motor clawFL(20, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor clawFR(11, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor clawBL(1, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::Motor clawBR(10, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-	okapi::MotorGroup clawR({clawFR, clawBR});
-	clawR.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-	okapi::MotorGroup clawL({clawFL, clawBL});
-	clawL.setBrakeMode(okapi::AbstractMotozr::brakeMode::hold); */
-
-	while (true){
-		// Drive Mechanics
-		double y_l = master.get_analog(ANALOG_LEFT_Y);
-		double y_r = master.get_analog(ANALOG_RIGHT_Y);
-
-		left.moveVelocity(y_l);
-		right.moveVelocity(y_r);
-
-		/* double y = master.get_analog(ANALOG_LEFT_Y);
-		double x = master.get_analog(ANALOG_LEFT_X);
-		double z = master.get_analog(ANALOG_RIGHT_X);
-		front_rt.moveVelocity(y+x+z);
-		back_rt.moveVelocity(y-x+z);
-    	front_lft.moveVelocity(y-x-z);
-		back_lft.moveVelocity(y+x-z); */
-
-		/* if(master.get_digital(DIGITAL_A)) {
-			clawL.moveVelocity(100);
-		} else if(master.get_digital(DIGITAL_B)){
-			clawL.moveVelocity(-100);
-		} else {
-			clawL.moveVelocity(0);
-		}
-
-		if(master.get_digital(DIGITAL_X)) {
-			clawR.moveVelocity(100);
-		} else if(master.get_digital(DIGITAL_Y)){
-			clawR.moveVelocity(-100);
-		} else {
-			clawR.moveVelocity(0);
-		} */
-
-		pros::delay(20);
+			motor1.move(joystick_value+joystick_valueX);
+			motor2.move(joystick_value- joystick_valueX);
+			motor3.move(joystick_value- joystick_valueX) ;
+			motor4.move(joystick_value+ joystick_valueX);
+		   // motor1.move(joystick_valueX);
+			//motor2.move(joystick_valueX);
+			//motor3.move(joystick_valueX);
+			//motor4.move(joystick_valueX);
 	}
-/*
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor front_rt(14);
-	pros::Motor back_rt(1);
-	pros::Motor front_lft(15);
-	pros::Motor back_lft(2);
 
-	//9 and 10 goalcatch motors
-	pros::Motor goalcatch_lft(9);
-	pros::Motor goalcatch_rt(10);
-
-	goalcatch_rt.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-	goalcatch_lft.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
-	// 16 intake motor
-	pros::Motor intake(16);
-
-	while (true){
-
-		// Driving Mechanics
-		double y = -master.get_analog(ANALOG_LEFT_X);
-		double x = -master.get_analog(ANALOG_LEFT_Y);
-		double z = -master.get_analog(ANALOG_RIGHT_X);
-
-		front_rt.move(y-x-z);
-		back_rt.move(y+x-z);
-    	front_lft.move(y+x+z);
-		back_lft.move(y-x+z);
-
-		// Goal Catch Mechanics
-		if(master.get_digital(DIGITAL_A)){
-			goalcatch_lft.move(-goalCatchPower);
-			goalcatch_rt.move(goalCatchPower);
-		} else if(master.get_digital(DIGITAL_B)) {
-			goalcatch_rt.move(-goalCatchPower);
-			goalcatch_lft.move(goalCatchPower);
-		} else {
-			goalcatch_rt.move(0);
-			goalcatch_lft.move(0);
-		}
-
-		// Intake
-		if(master.get_digital(DIGITAL_L2)) {
-			intake.move(-90);
-		} else if(master.get_digital(DIGITAL_R2)){
-			intake.move(90);
-		}else {
-			intake.move(0);
-		}
-
-		pros::delay(20);
-	}*/
 }
+	
+
+
+
+
+
+
+
+// 	// Controller
+// 	pros::Controller master(pros::E_CONTROLLER_MASTER);
+
+// 	// Drive Motors
+
+// 	// Front Right Motors
+// 	okapi::Motor front_rt(5, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	
+// 	// Front Left Motors
+// 	okapi::Motor front_lft(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	
+	
+// 	// Back Right Motors
+// 	okapi::Motor back_rt(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	
+// 	// Back Left Motors
+// 	okapi::Motor back_lft(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+	
+// 	// Group Motors
+// 	okapi::MotorGroup left({front_lft, back_lft});
+// 	okapi::MotorGroup right({front_rt, back_rt});
+	
+
+// 	// Chasis Motors Grouped
+// 	/* okapi::ChassisControllerBuilder()
+// 		.withMotors(drive_lft, drive_rt)
+// 		// Green gearset, 4 in wheel diam, 11.5 in wheel track
+// 		.withDimensions(okapi::AbstractMotor::gearset::blue, {{4_in, 11.5_in}, okapi::imev5BlueTPR})
+// 		.build(); */
+
+// 	// Claw Motors
+// 	/* okapi::Motor clawFL(20, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+// 	okapi::Motor clawFR(11, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+// 	okapi::Motor clawBL(1, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+// 	okapi::Motor clawBR(10, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+// 	okapi::MotorGroup clawR({clawFR, clawBR});
+// 	clawR.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+// 	okapi::MotorGroup clawL({clawFL, clawBL});
+// 	clawL.setBrakeMode(okapi::AbstractMotozr::brakeMode::hold); */
+
+// 	while (true){
+// 		// Drive Mechanics
+// 		double y_l = master.get_analog(ANALOG_LEFT_Y);
+// 		double y_r = master.get_analog(ANALOG_RIGHT_Y);
+
+// 		left.moveVelocity(y_l);
+// 		right.moveVelocity(y_r);
+
+// 		/* double y = master.get_analog(ANALOG_LEFT_Y);
+// 		double x = master.get_analog(ANALOG_LEFT_X);
+// 		double z = master.get_analog(ANALOG_RIGHT_X);
+// 		front_rt.moveVelocity(y+x+z);
+// 		back_rt.moveVelocity(y-x+z);
+//     	front_lft.moveVelocity(y-x-z);
+// 		back_lft.moveVelocity(y+x-z); */
+
+// 		/* if(master.get_digital(DIGITAL_A)) {
+// 			clawL.moveVelocity(100);
+// 		} else if(master.get_digital(DIGITAL_B)){
+// 			clawL.moveVelocity(-100);
+// 		} else {
+// 			clawL.moveVelocity(0);
+// 		}
+
+// 		if(master.get_digital(DIGITAL_X)) {
+// 			clawR.moveVelocity(100);
+// 		} else if(master.get_digital(DIGITAL_Y)){
+// 			clawR.moveVelocity(-100);
+// 		} else {
+// 			clawR.moveVelocity(0);
+// 		} */
+
+// 		pros::delay(20);
+// 	}
+// /*
+// 	pros::Controller master(pros::E_CONTROLLER_MASTER);
+// 	pros::Motor front_rt(14);
+// 	pros::Motor back_rt(1);
+// 	pros::Motor front_lft(15);
+// 	pros::Motor back_lft(2);
+
+// 	//9 and 10 goalcatch motors
+// 	pros::Motor goalcatch_lft(9);
+// 	pros::Motor goalcatch_rt(10);
+
+// 	goalcatch_rt.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+// 	goalcatch_lft.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+// 	// 16 intake motor
+// 	pros::Motor intake(16);
+
+// 	while (true){
+
+// 		// Driving Mechanics
+// 		double y = -master.get_analog(ANALOG_LEFT_X);
+// 		double x = -master.get_analog(ANALOG_LEFT_Y);
+// 		double z = -master.get_analog(ANALOG_RIGHT_X);
+
+// 		front_rt.move(y-x-z);
+// 		back_rt.move(y+x-z);
+//     	front_lft.move(y+x+z);
+// 		back_lft.move(y-x+z);
+
+// 		// Goal Catch Mechanics
+// 		if(master.get_digital(DIGITAL_A)){
+// 			goalcatch_lft.move(-goalCatchPower);
+// 			goalcatch_rt.move(goalCatchPower);
+// 		} else if(master.get_digital(DIGITAL_B)) {
+// 			goalcatch_rt.move(-goalCatchPower);
+// 			goalcatch_lft.move(goalCatchPower);
+// 		} else {
+// 			goalcatch_rt.move(0);
+// 			goalcatch_lft.move(0);
+// 		}
+
+// 		// Intake
+// 		if(master.get_digital(DIGITAL_L2)) {
+// 			intake.move(-90);
+// 		} else if(master.get_digital(DIGITAL_R2)){
+// 			intake.move(90);
+// 		}else {
+// 			intake.move(0);
+// 		}
+
+// 		pros::delay(20);
+// 	}*/
+//}

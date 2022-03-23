@@ -14,6 +14,30 @@ enum goal_color
     BLUE    
 };
 
+int s;
+float
+char
+array
+
+
+class Rectangle {
+    int width;
+    int height;
+
+    Rectangle(int w, int h) {
+        width = w;
+        height = h;
+    }
+
+    int getArea() {
+        return width*height;
+    }
+
+}
+
+
+
+
 class GoalCamera {
     public:
     std::shared_ptr<pros::Vision> vision_sensor;
