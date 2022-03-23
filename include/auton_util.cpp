@@ -26,6 +26,8 @@ void turn_to_goal(std::shared_ptr<GoalCamera> camera,
     int total_time = 0;
     double kp = 9000;
     double ki = 50;
+
+    
     while(total_time < 2000 && (abs(x) > err_thresh || settled_thresh <= 150)) {
         std::tie(x, y) = camera->get_by_sig(c);
         double v_prop = x/VISION_FOV_WIDTH*2;
