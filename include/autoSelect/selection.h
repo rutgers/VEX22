@@ -4,7 +4,7 @@
 
 //selector configuration
 #define HUE 360
-#define DEFAULT -1
+#define DEFAULT 2 // 2 is for the right side and 1 is for the left side
 #define AUTONS "Left", "Right RightYellow", "Right CenterYellow"
 
 namespace selector{
