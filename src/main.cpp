@@ -24,16 +24,8 @@
 #define SKAR_1 2
 #define SKAR_2 3
 
-<<<<<<< HEAD
-#define SKILLS true
-#define BUILD_TARGET SKAR_3 //SKAR_1 or SKAR_2
-//#define AUTON_SIDE RED //RED OR BLUE
-// #if BUILD_TARGET == SKAR_1
-//     #include "SKAR_1.cpp"
-// #endif
-=======
 // Build Target
-#define BUILD_TARGET SKAR_1 //SKAR_1 or SKAR_2
+#define BUILD_TARGET SKAR_3 //SKAR_1 or SKAR_2
 
 // Initial speed for auton
 #define AUTON_INIT 165
@@ -45,7 +37,6 @@
     //bool tank = (bool) getenv("TANK");
     #include "SKAR_1.cpp"
 #endif
->>>>>>> 3b94b8436ad9986bf11aef84920f340e042fac94
 #if BUILD_TARGET == SKAR_2
     #include "SKAR_2.cpp"
 #endif

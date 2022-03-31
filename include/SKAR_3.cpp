@@ -1,7 +1,4 @@
-#include "main.h"
-//#include "DriveTrain.cpp"
-#include "okapi/api.hpp"
-#include <vector>
+#include "SKAR_3.hpp"
 /**
  * A callback function for LLEMU's center button.
  *
@@ -78,25 +75,32 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	//stole the tank drive code to make the new robot zack and kyle made work, i haven't updated this to the github- -tyler
+	front_rt1.reset(new okapi::Motor(1, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_rt2.reset(new okapi::Motor(2, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_rt1.reset(new okapi::Motor(3, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_rt2.reset(new okapi::Motor(4, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_lft1.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_lft2.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_lft1.reset(new okapi::Motor(7, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_lft2.reset(new okapi::Motor(8, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+
+	front_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2}));
+	front_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2}));
+	back_rt.reset(new okapi::MotorGroup({back_rt1, back_rt2}));
+	back_lft.reset(new okapi::MotorGroup({back_lft1, back_lft2}));
+
+	drive_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2, back_lft1, back_lft2}));
+	drive_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2, back_rt1, back_rt2}));
 	
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor motor1(15, true);
-	pros::Motor motor2(2, false);
-	pros::Motor motor3(5, true);
-	pros::Motor motor4(6, false);
+	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
 
+	int move_volt = 11000;
 	while(true) {
-		int joystick_value = master.get_analog(ANALOG_RIGHT_Y);
-		int joystick_valueX = master.get_analog(ANALOG_RIGHT_X);
-
-			motor1.move(joystick_value+joystick_valueX);
-			motor2.move(joystick_value- joystick_valueX);
-			motor3.move(joystick_value- joystick_valueX) ;
-			motor4.move(joystick_value+ joystick_valueX);
-		   // motor1.move(joystick_valueX);
-			//motor2.move(joystick_valueX);
-			//motor3.move(joystick_valueX);
-			//motor4.move(joystick_valueX);
+		double y_l = master->get_analog(ANALOG_LEFT_Y);
+		double y_r = master->get_analog(ANALOG_RIGHT_Y);
+		drive_lft->moveVoltage(y_l / 127 * move_volt);
+		drive_rt->moveVoltage(y_r / 127 * move_volt);
 	}
 
 }

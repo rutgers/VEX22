@@ -14,26 +14,26 @@ enum goal_color
     BLUE    
 };
 
-int s;
-float
-char
-array
+// int s;
+// float
+// char
+// array
 
 
-class Rectangle {
-    int width;
-    int height;
+// class Rectangle {
+//     int width;
+//     int height;
 
-    Rectangle(int w, int h) {
-        width = w;
-        height = h;
-    }
+//     Rectangle(int w, int h) {
+//         width = w;
+//         height = h;
+//     }
 
-    int getArea() {
-        return width*height;
-    }
+//     int getArea() {
+//         return width*height;
+//     }
 
-}
+// }
 
 
 
