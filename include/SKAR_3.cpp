@@ -80,24 +80,43 @@ void autonomous() {
 void opcontrol() {
 	
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor motor1(15, true);
-	pros::Motor motor2(2, false);
-	pros::Motor motor3(5, true);
-	pros::Motor motor4(6, false);
+	pros::Motor motor1(12, false);
+	pros::Motor motor2(11, true);
+	pros::Motor motor3(2, true);
+	pros::Motor motor4(1, false);
+	pros::Motor motor5(19, true);
+	pros::Motor motor6(20, false);
+	pros::Motor motor7(9, true);
+	pros::Motor motor8(10, false);
+
+
+
 
 	while(true) {
-		int joystick_value = master.get_analog(ANALOG_RIGHT_Y);
+		int joystick_value = master.get_analog(ANALOG_LEFT_Y);
 		int joystick_valueX = master.get_analog(ANALOG_RIGHT_X);
+		motor1.move(joystick_value + joystick_valueX);
+		motor2.move(joystick_value + joystick_valueX);
+		motor3.move(joystick_value + joystick_valueX);
+		motor4.move(joystick_value + joystick_valueX);
+		motor5.move(joystick_value - joystick_valueX);
+		motor6.move(joystick_value - joystick_valueX);
+		motor7.move(joystick_value - joystick_valueX);
+		motor8.move(joystick_value - joystick_valueX);
 
-			motor1.move(joystick_value+joystick_valueX);
-			motor2.move(joystick_value- joystick_valueX);
-			motor3.move(joystick_value- joystick_valueX) ;
-			motor4.move(joystick_value+ joystick_valueX);
+		
+
+			//motor1.move(joystick_value+joystick_valueX);
+			//motor2.move(joystick_value- joystick_valueX);
+			//motor3.move(joystick_value- joystick_valueX) ;
+			//motor4.move(joystick_value+ joystick_valueX);
 		   // motor1.move(joystick_valueX);
 			//motor2.move(joystick_valueX);
 			//motor3.move(joystick_valueX);
 			//motor4.move(joystick_valueX);
+
 	}
+
 
 }
 	
