@@ -302,6 +302,11 @@
                 "version": "4.2.0"
             }
         },
-        "upload_options": {}
+        "upload_options": {
+            "compress_bin": true,
+            "description": "Test",
+            "remote_name": "Rutgers_VEX_22",
+            "slot": 3
+        }
     }
 }

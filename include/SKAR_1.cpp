@@ -30,7 +30,7 @@ void initialize() {
 	back_lft.reset(new okapi::Motor(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	drive_lft.reset(new okapi::MotorGroup({*front_lft, *back_lft}));
 	drive_rt.reset(new okapi::MotorGroup({*front_rt, *back_rt}));
- 
+
 	ks.kP = 0.0010;
 	ks.kI = 0;
 	ks.kD = -0.000002;
@@ -39,10 +39,10 @@ void initialize() {
 	chassis = okapi::ChassisControllerBuilder()
 		.withMotors(drive_lft, drive_rt)
 		// Green gearset, 4 in wheel diam, 11.5 in wheel track
-		.withDimensions(okapi::AbstractMotor::gearset::green, {{4_in, 11.5_in}, okapi::imev5GreenTPR})
+		.withDimensions(okapi::AbstractMotor::gearset::green, {{4_in, 11_in}, okapi::imev5GreenTPR})
 		.withGains(ks, ks)
 		.build();
-	
+
 	lift_front_lft.reset(new okapi::Motor(20, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	lift_front_rt.reset(new okapi::Motor(11, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	lift_front.reset(new okapi::MotorGroup({*lift_front_lft, *lift_front_rt}));
@@ -112,7 +112,7 @@ void autonomous() {
 	lift_back_control->setTarget(-(2/8.0)*LIFT_GEAR_RATIO);
 	chassis->moveDistance(3_ft);
 	intake->moveVoltage(12000);
- }	
+ }
 
 /**
  * Runs the operator control code. This function will be started in its own task
