@@ -23,6 +23,7 @@
 
 #define SKAR_1 2
 #define SKAR_2 3
+#define SKAR_3 4
 
 // Build Target
 #define BUILD_TARGET SKAR_2 //SKAR_1 or SKAR_2

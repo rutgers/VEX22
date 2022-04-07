@@ -53,3 +53,9 @@ std::shared_ptr<GoalCamera> camera;
 
 // IMU Initialization
 std::shared_ptr<pros::Imu> imu;
+
+// Distance Sensor Init
+std::shared_ptr<pros::Distance> dist_sensor;
+
+// Button Init
+std::shared_ptr<okapi::ADIButton> button;

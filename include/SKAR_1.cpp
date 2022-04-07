@@ -30,6 +30,7 @@ double BACK_LIFT_UP_S = (1.5 / 6.0) * BACK_LIFT_GEAR_RATIO;
 double FRONT_LIFT_DOWN = (0.05) * FRONT_LIFT_GEAR_RATIO;
 double FRONT_LIFT_UP = (0.27) * FRONT_LIFT_GEAR_RATIO;
 double FRONT_LIFT_UP_S = (0.35) * FRONT_LIFT_GEAR_RATIO;
+double FRONT_LIFT_UP_SLI = (1 / 360.0) * FRONT_LIFT_GEAR_RATIO;
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -40,8 +41,21 @@ double FRONT_LIFT_UP_S = (0.35) * FRONT_LIFT_GEAR_RATIO;
 void initialize()
 {
 
+<<<<<<< HEAD
+	front_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_rt.reset(new okapi::Motor(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_lft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_lft.reset(new okapi::Motor(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	drive_lft.reset(new okapi::MotorGroup({*front_lft, *back_lft}));
+	drive_rt.reset(new okapi::MotorGroup({*front_rt, *back_rt}));
+
+	ks.kP = 0.0010;
+=======
+	selector::init();
+
 	// PID Variables
 	ks.kP = 0.00101;
+>>>>>>> 0fd5cf178a0f61ecee50a82f52ac65415f506ea8
 	ks.kI = 0;
 	ks.kD = 0;
 	ks.kBias = 0;
@@ -94,6 +108,12 @@ void initialize()
 
 	// IMU
 	imu.reset(new pros::Imu(17));
+
+	// Distance Sensor
+	dist_sensor.reset(new pros::Distance(6));
+
+	// Button Sense
+	button.reset(new okapi::ADIButton('B'));
 }
 
 /**
@@ -126,19 +146,31 @@ void competition_initialize() {}
  * from where it left off.
  */
 
-void auton_small_side()
+void auton_left_side()
 {
-	// Move to the Yellow
-	chassis->setMaxVelocity(AUTON_INIT);
-	chassis->moveDistance(2.75_ft);
-	chassis->setMaxVelocity(165);
+	int DIST = 30; // mm distance
+	drive_rt->moveVoltage(12000);
+	drive_lft->moveVoltage(12000);
+	int move_time = 0;
 
-	// Grab the Yellow
-	// pros::delay(0);
+	drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+	drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+	int MAX_TIME = 1400; // seconds want to stop running no matter what (FOR AUTON LINE)
+	while ((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME)
+	{
+		/* if (dist_sensor->get() < 400 && dist_sensor->get() != 0)
+		{
+			drive_rt->moveVoltage(6000);
+			drive_lft->moveVoltage(6000);
+			MAX_TIME = MAX_TIME + 3;
+		} */
+		pros::delay(5);
+		move_time += 5;
+	}
+	drive_rt->moveVoltage(0);
+	drive_lft->moveVoltage(0);
 	piston->set_value(true);
-	// pros::delay(400);
-
-	// Move back to the original position
+	pros::delay(150);
 	chassis->moveDistance(-2.75_ft);
 	pros::delay(400);
 
@@ -163,9 +195,9 @@ void auton_small_side()
 	pros::delay(1000);
 
 	// Move the chassis towards the blue
-	if (AUTON_COLOR == BLUE)
+	if (selector::auton < 0)
 	{
-		turn_to_goal(camera, drive_rt, drive_lft, AUTON_COLOR);
+		turn_to_goal(camera, drive_rt, drive_lft, BLUE);
 	}
 	chassis->moveDistanceAsync(-1_ft);
 	pros::delay(1000);
@@ -202,13 +234,102 @@ void auton_small_side()
 	}
 }
 
+void auton_right_side()
+{
+
+	// Move to the Yellow
+	int DIST = 30; // mm distance
+	drive_rt->moveVoltage(12000);
+	drive_lft->moveVoltage(12000);
+	int move_time = 0;
+
+	drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+	drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+	int MAX_TIME = 1400; // seconds want to stop running no matter what (FOR AUTON LINE)
+	while ((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME)
+	{
+		/* if (dist_sensor->get() < 400 && dist_sensor->get() != 0)
+		{
+			drive_rt->moveVoltage(6000);
+			drive_lft->moveVoltage(6000);
+			MAX_TIME = MAX_TIME + 3;
+		} */
+		pros::delay(5);
+		move_time += 5;
+	}
+	drive_rt->moveVoltage(0);
+	drive_lft->moveVoltage(0);
+	piston->set_value(true);
+	pros::delay(150);
+	chassis->moveDistance(-1.30_ft);
+	pros::delay(400);
+
+	// Turn to the red or blue
+	chassis->turnAngle(-65_deg);
+	pros::delay(200);
+	chassis->moveDistance(0.5_ft);
+	if (selector::auton < 0)
+	{
+		turn_to_goal(camera, drive_rt, drive_lft, BLUE);
+	}
+
+	// turn_to_goal(camera, drive_rt, drive_lft, BLUE);
+
+	// Put the Back Lift Down
+	back_lift_control->setTarget(BACK_LIFT_DOWN);
+	pros::delay(1500);
+
+	// Go toward the Blue or Red neutral goal
+	chassis->moveDistance(-1.2_ft);
+	pros::delay(1000);
+
+	// Lift the back lift up
+	back_lift_control->setTarget(BACK_LIFT_UP);
+	pros::delay(1500);
+
+	// Move back
+	chassis->moveDistance(1_ft);
+<<<<<<< HEAD
+	chassis->waitUntilSettled();
+	chassis->turnAngle(-140_deg);
+	chassis->waitUntilSettled();
+	lift_back_control->setTarget(-3.0/8.0*LIFT_GEAR_RATIO);
+	lift_back_control->waitUntilSettled();
+	chassis->moveDistance(-3_ft);
+	chassis->waitUntilSettled();
+	lift_back_control->setTarget(-(2/8.0)*LIFT_GEAR_RATIO);
+	chassis->moveDistance(3_ft);
+	intake->moveVoltage(12000);
+ }
+=======
+	pros::delay(200);
+
+	// Turn around for intaking
+	chassis->turnAngle(-90_deg);
+	pros::delay(1000);
+
+	// Move Front Lift Up
+	/* front_lift_control->setTarget(FRONT_LIFT_UP_SLI);
+	pros::delay(1000); */
+
+	// start moving the intake
+	/* intake->moveVelocity(200);
+	pros::delay(200); */
+
+	// Storing rings time
+	while (true)
+	{
+		chassis->moveDistance(-0.6_ft);
+		chassis->moveDistance(0.6_ft);
+	}
+}
+
 void autonomous()
 {
 	// Back Lift Gear Ratio: 1:7
 	// maxVelocity 165
-	if (SKILLS == true) // SKILLS CODE
+	if (selector::auton == 0) // SKILLS CODE
 	{
-
 		// Drive Forward
 		chassis->moveDistance(0.2_ft);
 		pros::delay(400);
@@ -226,14 +347,14 @@ void autonomous()
 		pros::delay(200);
 
 		// Move Back Lift Down
-		back_lift_control->setTarget(BACK_LIFT_DOWN);
-		pros::delay(200);
+		//back_lift_control->setTarget(BACK_LIFT_DOWN);
+		//pros::delay(200);
 
 		// Turn Towards the Yellow
 		chassis->turnAngle(60_deg);
 		pros::delay(200);
-		turn_to_goal(camera, drive_rt, drive_lft, SKILLS_COLOR);
-		pros::delay(200);
+		//turn_to_goal(camera, drive_rt, drive_lft, YELLOW);
+		//pros::delay(200);
 
 		// Move toward the the Yellow
 		chassis->moveDistance(-2.75_ft);
@@ -267,15 +388,17 @@ void autonomous()
 	}
 	else // AUTON CODE
 	{
-		if (AUTON_NUM == 1)
+		if (abs(selector::auton) == 1) // left of the ramp
 		{
-			auton_small_side();
+			auton_left_side();
 		}
-		else
+		else // right of the ramp
 		{
+			auton_right_side();
 		}
 	}
 }
+>>>>>>> 0fd5cf178a0f61ecee50a82f52ac65415f506ea8
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -294,52 +417,40 @@ void opcontrol()
 {
 	chassis->stop();
 	int piston_timer = 0;
-	bool piston_flag = false;
+	bool piston_flag = true;
+
+	bool chassis_hold = false;
+	int delay = 0;
+	int move_volt = 11000;
 
 	while (true)
 	{
-
-		/*
-			Driving Controls:
-
-			Left Joystick Up and Down - Control Left Side of Chassis
-			Right Joystick Up and Down - Control Right Side of Chassis
-			R1 - Back Lift Up
-			R2 - Back Lift Down
-			L1 - Front Lift Up
-			L2 - Front Lift Down
-			Right - Piston Up and Down
-			Up (Toggle) - Intake Up
-			Down (Toggle) - Intake Down
-			Right - Toggle Up and Down Off
-		*/
-
 		// Drive Mechanics
 
-		if (TANK == false)
+		if (selector::auton == 0)
 		{
 			double y = master->get_analog(ANALOG_LEFT_Y);
 			double x = 0; // master->get_analog(ANALOG_LEFT_X);
 			double z = -master->get_analog(ANALOG_RIGHT_X);
-			drive_lft->moveVelocity((y + x - z) * 100);
-			drive_rt->moveVelocity((y - x + z) * 100);
+			drive_lft->moveVoltage((y + x - z) / 127 * move_volt);
+			drive_rt->moveVoltage((y - x + z) / 127 * move_volt);
 		}
 		else
 		{
 			double y_l = master->get_analog(ANALOG_LEFT_Y);
 			double y_r = master->get_analog(ANALOG_RIGHT_Y);
-			drive_lft->moveVelocity(y_l);
-			drive_rt->moveVelocity(y_r);
+			drive_lft->moveVoltage(y_l / 127 * move_volt);
+			drive_rt->moveVoltage(y_r / 127 * move_volt);
 		}
 
 		// Back Lifting Mechanics
 		if (master->get_digital(DIGITAL_R1))
 		{ // Up
-			back_lift->moveVelocity(-150);
+			back_lift->moveVelocity(-1200);
 		}
 		else if (master->get_digital(DIGITAL_R2))
 		{ // Down
-			back_lift->moveVelocity(150);
+			back_lift->moveVelocity(1200);
 		}
 		else
 		{
@@ -386,13 +497,36 @@ void opcontrol()
 			intake->moveVelocity(0);
 		}
 
-		// Brake Mode
-		if (master->get_digital(DIGITAL_X))
+		// Brake Mode Toggle
+		if (master->get_digital(DIGITAL_X) && delay <= 0)
 		{
-			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+			chassis_hold = !chassis_hold;
+			delay = 200;
+		}
+
+		if (chassis_hold)
+		{
+			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+			move_volt = 500;
+		}
+		else
+		{
+			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
+			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
+			move_volt = 10000;
+		}
+
+		// Button Toggle
+		if (button->isPressed())
+		{
+			piston->set_value(true);
 		}
 
 		pros::delay(20);
+		if (delay > 0)
+		{
+			delay = delay - 20;
+		}
 	}
 }
