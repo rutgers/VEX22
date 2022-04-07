@@ -25,3 +25,6 @@ std::shared_ptr<okapi::ChassisController> chassis;
 
 
 std::shared_ptr<pros::Controller> master;
+
+// IMU Initialization
+std::shared_ptr<pros::Imu> imu;

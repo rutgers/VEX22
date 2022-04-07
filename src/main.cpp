@@ -23,9 +23,10 @@
 
 #define SKAR_1 2
 #define SKAR_2 3
+#define SKAR_3 4
 
 // Build Target
-#define BUILD_TARGET SKAR_3 //SKAR_1 or SKAR_2
+#define BUILD_TARGET SKAR_2 //SKAR_1 or SKAR_2
 
 // Initial speed for auton
 #define AUTON_INIT 165
