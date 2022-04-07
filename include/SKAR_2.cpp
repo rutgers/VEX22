@@ -164,7 +164,7 @@ void autonomous()
 	chassis->stop();
 	chassis->setMaxVelocity(200);
 	if(selector::auton == 0) {
-		int move_vel = 60;
+		int move_vel = 150;	
 		chassis->setMaxVelocity(move_vel);
 
 		back_claw_control->setTarget(BACK_CLAW_DOWN);
@@ -243,7 +243,7 @@ void autonomous()
 		// chassis->setMaxVelocity(150);
 
 		//Grab Yellow
-		int DIST = 28;
+		int DIST = 35;
 		drive_rt->moveVoltage(12000);
 		drive_lft->moveVoltage(12000);
 		lift_front_control->setTarget(FRONT_LIFT_MOVE);
@@ -257,17 +257,17 @@ void autonomous()
 		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 		int MAX_TIME = 1400;
 		while((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME) {
-			if(dist_sensor->get() < 400) {
-				drive_rt->moveVoltage(6000);
-				drive_lft->moveVoltage(6000);
-				MAX_TIME = MAX_TIME+3;
-			}
+			// if(dist_sensor->get() < 350 && dist_sensor->get() != 0) {
+			// 	drive_rt->moveVoltage(6000);
+			// 	drive_lft->moveVoltage(6000);
+			// 	MAX_TIME = MAX_TIME+3;
+			// }
 			pros::delay(5);
 			move_time += 5;
 		}
+		close_claw(front_claw_piston, front_claw_control, 0);
 		drive_rt->moveVoltage(0);
 		drive_lft->moveVoltage(0);
-		close_claw(front_claw_piston, front_claw_control, 0);
 		pros::delay(150);
 		lift_front_control->setTarget(FRONT_LIFT_MOVE);
 
@@ -276,7 +276,6 @@ void autonomous()
 			chassis->moveDistance(-4.5_ft);
 			lift_front_control->setTarget(FRONT_LIFT_PLAT);
 			back_claw_control->setTarget(BACK_CLAW_DOWN);
-			chassis->setMaxVelocity(150);
 			pros::delay(250);
 			back_claw_control->setTarget(0);
 			pros::delay(1000);
@@ -284,13 +283,14 @@ void autonomous()
 			if(selector::auton < 0){
 				turn_to_goal(camera, drive_lft, drive_rt, BLUE);
 			}
-			chassis->moveDistance(0.5_ft);
+			chassis->moveDistance(0.8_ft);
 			lift_back_control->setTarget(BACK_LIFT_DOWN);
 			pros::delay(1500);
 			chassis->moveDistance(-2_ft);
 			lift_back_control->setTarget(BACK_LIFT_UP);
 			chassis->moveDistance(2_ft);
 			chassis->turnAngle(-110_deg);
+			chassis->moveDistance(-1.75_ft);
 		}
 		// We're on the right
 		else {
@@ -302,7 +302,7 @@ void autonomous()
 			pros::delay(250);
 			back_claw_control->setTarget(0);
 
-			chassis->turnAngle(-100_deg);
+			chassis->turnAngle(-110_deg);
 			chassis->waitUntilSettled();
 			if(selector::auton < 0){
 				turn_to_goal(camera, drive_lft, drive_rt, BLUE);
@@ -349,7 +349,7 @@ void opcontrol()
 	int delay = 0;
 	int front_claw_timer = 0;
 	int back_claw_timer = 0;
-	bool front_flag = true;
+	bool front_flag = front_claw_control->getTarget() > FRONT_CLAW_UP;
 	bool back_flag = true;
 	bool chassis_hold = false;
 
