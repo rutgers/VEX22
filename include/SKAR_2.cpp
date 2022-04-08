@@ -160,7 +160,7 @@ void competition_initialize() {}
  * from where it left off.
  */
 // original autonomous code
-void autonomous1()
+void autonomous()
 {
 	lift_front_control->tarePosition();
 	lift_back_control->tarePosition();
@@ -170,7 +170,7 @@ void autonomous1()
 	chassis->setMaxVelocity(200);
 	if (selector::auton == 0)
 	{
-		int move_vel = 60;
+		/* int move_vel = 60;
 		chassis->setMaxVelocity(move_vel);
 
 		back_claw_control->setTarget(BACK_CLAW_DOWN);
@@ -230,7 +230,7 @@ void autonomous1()
 		// Move to balance
 		chassis->moveDistance(4_ft);
 		chassis->turnAngle(-60_deg);
-		chassis->moveDistanceAsync(4_ft);
+		chassis->moveDistanceAsync(4_ft); */
 		// pros::delay(3000);
 		// chassis->moveDistance(-2_ft);
 		// chassis->turnAngle(210_deg);
@@ -240,6 +240,9 @@ void autonomous1()
 	}
 	else
 	{
+		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+		balance(chassis, imu);
 		// Grab yellow
 		// lift_front_control->setTarget(FRONT_LIFT_DOWN);
 		// chassis->moveDistance(4.8_ft);
@@ -248,7 +251,7 @@ void autonomous1()
 		// chassis->setMaxVelocity(150);
 
 		// Grab Yellow
-		int DIST = 28;
+		/* int DIST = 28;
 		drive_rt->moveVoltage(12000);
 		drive_lft->moveVoltage(12000);
 		lift_front_control->setTarget(FRONT_LIFT_MOVE);
@@ -336,15 +339,15 @@ void autonomous1()
 		{
 			chassis->moveDistance(1_ft);
 			chassis->moveDistance(-1_ft);
-		}
+		} */
 	}
 }
 
-void autonomous()
+/* void autonomous1()
 {
-	//balance(chassis, imu);
-	imu_turning(361, drive_rt, drive_lft, imu);
-}
+	balance(drive_rt, drive_lft, imu);
+	// imu_turning(361, drive_rt, drive_lft, imu);
+} */
 
 /**
  * Runs the operator control code. This function will be started in its own task
