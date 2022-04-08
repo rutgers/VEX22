@@ -148,51 +148,27 @@ void autonomous()
 		// pros::delay(250);
 		// back_claw_control->setTarget(0);
 
-		// Grab Opposing side on Balance
-		chassis->turnAngle(-40_deg);
-		chassis->moveDistance(1.5_ft);
-		lift_front_control->setTarget(FRONT_LIFT_PLAT);
-		pros::delay(1000);
-		chassis->turnAngle(-200_deg);
-		turn_to_goal(camera, drive_lft, drive_rt, BLUE);
-		chassis->moveDistance(0.75_ft);
-		lift_back_control->setTarget(BACK_LIFT_DOWN);
-		pros::delay(1000);
-		chassis->setMaxVelocity(50);
-		chassis->moveDistanceAsync(-2_ft);
-		pros::delay(3000);
-		chassis->stop();
-		chassis->setMaxVelocity(move_vel);
-		lift_back_control->setTarget(BACK_LIFT_UP);
-		back_claw_control->setTarget(BACK_CLAW_DOWN);
-		chassis->moveDistance(1.2_ft);
+		// // Grab Our Side
+		// lift_front_control->setTarget(FRONT_LIFT_DOWN);
+		// chassis->moveDistance(1.75_ft);
+		// close_claw(front_claw_piston, front_claw_control);
+		// lift_front_control->setTarget(FRONT_LIFT_MOVE);
+		// intake->moveVoltage(INTAKE_IN);
+		// chassis->moveDistance(5_ft);
+		// intake->moveVoltage(0);
 
-		// Place Our Side
-		chassis->turnAngle(135_deg);
-		intake->moveVoltage(INTAKE_IN);
-		chassis->moveDistance(2.75_ft);
-		chassis->turnAngle(90_deg);
-		chassis->moveDistanceAsync(1.25_ft);
-		pros::delay(2000);
-		open_claw(front_claw_piston, front_claw_control);
-		pros::delay(1000);
-		intake->moveVoltage(0);
-
-		// Grab Yellow
-		chassis->moveDistance(-0.5_ft);
-		chassis->turnAngle(-100_deg);
-		chassis->moveDistance(-1.75_ft);
-		chassis->turnAngle(-80_deg);
-		lift_front_control->setTarget(FRONT_LIFT_DOWN);
-		pros::delay(1000);
-		chassis->moveDistance(3.5_ft);
-		close_claw(front_claw_piston, front_claw_control);
-		lift_front_control->setTarget(FRONT_LIFT_PLAT);
-
-		// Move to balance
-		chassis->moveDistance(4_ft);
-		chassis->turnAngle(-60_deg);
-		chassis->moveDistanceAsync(4_ft); */
+		// // Grab Opposing side on Balance
+		// chassis->turnAngle(-40_deg);
+		// chassis->moveDistance(1.5_ft);
+		// lift_front_control->setTarget(FRONT_LIFT_PLAT);
+		// pros::delay(1000);
+		// chassis->turnAngle(-200_deg);
+		// turn_to_goal(camera, drive_lft, drive_rt, BLUE);
+		// chassis->moveDistance(0.75_ft);
+		// lift_back_control->setTarget(BACK_LIFT_DOWN);
+		// pros::delay(1000);
+		// chassis->setMaxVelocity(50);
+		// chassis->moveDistanceAsync(-2_ft);
 		// pros::delay(3000);
 		// chassis->stop();
 		// chassis->setMaxVelocity(move_vel);
@@ -247,12 +223,7 @@ void autonomous()
 		// chassis->setMaxVelocity(150);
 
 		//Grab Yellow
-		//int DIST = 35;
-		// Grab Yellow
-		/* int DIST = 28;
-		int DIST = 28;
->>>>>>> a1b3b8bf10bb7b7f6343c73bdd30afc5f83c2ea4
->>>>>>> 64ad5341b52c3f4d5b257be47caeae29e195162e
+		int DIST = 35;
 		drive_rt->moveVoltage(12000);
 		drive_lft->moveVoltage(12000);
 		lift_front_control->setTarget(FRONT_LIFT_MOVE);
@@ -337,7 +308,7 @@ void autonomous()
 		{
 			chassis->moveDistance(1_ft);
 			chassis->moveDistance(-1_ft);
-		} */
+		} 
 	}
 }
 
@@ -472,6 +443,7 @@ void opcontrol()
 
 		front_claw_piston->set_value(front_flag);
 		back_claw_piston->set_value(back_flag);
+		back_tilter->set_value(back_flag);
 
 		// if(master->get_digital(DIGITAL_Y)) {
 		// 	turn_to_goal(camera, drive_lft, drive_rt, AUTON_COLOR);
