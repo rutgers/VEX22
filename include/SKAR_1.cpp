@@ -41,10 +41,21 @@ double FRONT_LIFT_UP_SLI = (1 / 360.0) * FRONT_LIFT_GEAR_RATIO;
 void initialize()
 {
 
+<<<<<<< HEAD
+	front_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_rt.reset(new okapi::Motor(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_lft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_lft.reset(new okapi::Motor(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	drive_lft.reset(new okapi::MotorGroup({*front_lft, *back_lft}));
+	drive_rt.reset(new okapi::MotorGroup({*front_rt, *back_rt}));
+
+	ks.kP = 0.0010;
+=======
 	selector::init();
 
 	// PID Variables
 	ks.kP = 0.00101;
+>>>>>>> 0fd5cf178a0f61ecee50a82f52ac65415f506ea8
 	ks.kI = 0;
 	ks.kD = 0;
 	ks.kBias = 0;
@@ -278,6 +289,19 @@ void auton_right_side()
 
 	// Move back
 	chassis->moveDistance(1_ft);
+<<<<<<< HEAD
+	chassis->waitUntilSettled();
+	chassis->turnAngle(-140_deg);
+	chassis->waitUntilSettled();
+	lift_back_control->setTarget(-3.0/8.0*LIFT_GEAR_RATIO);
+	lift_back_control->waitUntilSettled();
+	chassis->moveDistance(-3_ft);
+	chassis->waitUntilSettled();
+	lift_back_control->setTarget(-(2/8.0)*LIFT_GEAR_RATIO);
+	chassis->moveDistance(3_ft);
+	intake->moveVoltage(12000);
+ }
+=======
 	pros::delay(200);
 
 	// Turn around for intaking
@@ -374,6 +398,7 @@ void autonomous()
 		}
 	}
 }
+>>>>>>> 0fd5cf178a0f61ecee50a82f52ac65415f506ea8
 
 /**
  * Runs the operator control code. This function will be started in its own task
