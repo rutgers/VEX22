@@ -83,10 +83,6 @@ void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<
 void imu_turning(double target, std::shared_ptr<okapi::MotorGroup> drive_lft,
                  std::shared_ptr<okapi::MotorGroup> drive_rt, std::shared_ptr<pros::Imu> imu)
 {
-    if(target > 360) {
-        target -= 360;
-    }
-
     double heading = imu->get_heading(); // initial heading
     double err = abs(heading - target);
     double slow_threshold = 50; // need to change this to big as it needs to slow down

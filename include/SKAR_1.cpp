@@ -41,7 +41,6 @@ double FRONT_LIFT_UP_SLI = (1 / 360.0) * FRONT_LIFT_GEAR_RATIO;
 void initialize()
 {
 
-<<<<<<< HEAD
 	front_rt.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	back_rt.reset(new okapi::Motor(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 	front_lft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
@@ -50,12 +49,6 @@ void initialize()
 	drive_rt.reset(new okapi::MotorGroup({*front_rt, *back_rt}));
 
 	ks.kP = 0.0010;
-=======
-	selector::init();
-
-	// PID Variables
-	ks.kP = 0.00101;
->>>>>>> 0fd5cf178a0f61ecee50a82f52ac65415f506ea8
 	ks.kI = 0;
 	ks.kD = 0;
 	ks.kBias = 0;
@@ -289,7 +282,6 @@ void auton_right_side()
 
 	// Move back
 	chassis->moveDistance(1_ft);
-<<<<<<< HEAD
 	chassis->waitUntilSettled();
 	chassis->turnAngle(-140_deg);
 	chassis->waitUntilSettled();
@@ -301,104 +293,6 @@ void auton_right_side()
 	chassis->moveDistance(3_ft);
 	intake->moveVoltage(12000);
  }
-=======
-	pros::delay(200);
-
-	// Turn around for intaking
-	chassis->turnAngle(-90_deg);
-	pros::delay(1000);
-
-	// Move Front Lift Up
-	/* front_lift_control->setTarget(FRONT_LIFT_UP_SLI);
-	pros::delay(1000); */
-
-	// start moving the intake
-	/* intake->moveVelocity(200);
-	pros::delay(200); */
-
-	// Storing rings time
-	while (true)
-	{
-		chassis->moveDistance(-0.6_ft);
-		chassis->moveDistance(0.6_ft);
-	}
-}
-
-void autonomous()
-{
-	// Back Lift Gear Ratio: 1:7
-	// maxVelocity 165
-	if (selector::auton == 0) // SKILLS CODE
-	{
-		// Drive Forward
-		chassis->moveDistance(0.2_ft);
-		pros::delay(400);
-
-		// Grab Red
-		piston->set_value(true);
-		pros::delay(400);
-
-		// Lift Up the Red
-		front_lift_control->setTarget(FRONT_LIFT_UP);
-		pros::delay(300);
-
-		// Move Back to Turn Around
-		chassis->moveDistance(-0.4_ft);
-		pros::delay(200);
-
-		// Move Back Lift Down
-		//back_lift_control->setTarget(BACK_LIFT_DOWN);
-		//pros::delay(200);
-
-		// Turn Towards the Yellow
-		chassis->turnAngle(60_deg);
-		pros::delay(200);
-		//turn_to_goal(camera, drive_rt, drive_lft, YELLOW);
-		//pros::delay(200);
-
-		// Move toward the the Yellow
-		chassis->moveDistance(-2.75_ft);
-		pros::delay(200);
-
-		// Move Back Lift Up
-		back_lift_control->setTarget(BACK_LIFT_UP_S);
-		pros::delay(200);
-
-		// Move slight
-		chassis->moveDistance(-1_ft);
-		pros::delay(200);
-
-		// Turn toward the right
-		chassis->turnAngle(-105_deg);
-		chassis->waitUntilSettled();
-
-		// Move chassis back
-		back_lift_control->setTarget(BACK_LIFT_DOWN);
-		pros::delay(20000);
-		chassis->moveDistance(1_ft);
-		pros::delay(200);
-
-		// Move the chassis forward slighly
-		chassis->moveDistance(0.2_ft);
-		pros::delay(200);
-
-		// Drop the Red
-		piston->set_value(false);
-		pros::delay(200);
-	}
-	else // AUTON CODE
-	{
-		if (abs(selector::auton) == 1) // left of the ramp
-		{
-			auton_left_side();
-		}
-		else // right of the ramp
-		{
-			auton_right_side();
-		}
-	}
-}
->>>>>>> 0fd5cf178a0f61ecee50a82f52ac65415f506ea8
 
 /**
  * Runs the operator control code. This function will be started in its own task
