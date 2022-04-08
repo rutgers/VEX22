@@ -132,8 +132,8 @@ void autonomous()
 	lift_front_control->tarePosition();
 	chassis->stop();
 	chassis->setMaxVelocity(200);
-	if (selector::auton == 0)
-	{
+	// if (selector::auton == 0)
+	// {
 		/* int move_vel = 60;
 =======
 		int move_vel = 60;
@@ -210,107 +210,76 @@ void autonomous()
 		// // balance(chassis, imu);
 	}
 	else
-	{
-		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-		balance(chassis, imu);
-		// Grab yellow
-		// lift_front_control->setTarget(FRONT_LIFT_DOWN);
-		// chassis->moveDistance(4.8_ft);
-		// close_claw(front_claw_piston, front_claw_control);
-		// //lift_front_control->setTarget(FRONT_LIFT_MOVE);
-		// chassis->setMaxVelocity(150);
+	{*/
+	drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
-		//Grab Yellow
-		int DIST = 35;
->>>>>>> a1b3b8bf10bb7b7f6343c73bdd30afc5f83c2ea4
->>>>>>> 64ad5341b52c3f4d5b257be47caeae29e195162e
-		drive_rt->moveVoltage(12000);
-		drive_lft->moveVoltage(12000);
-		lift_front_control->setTarget(FRONT_LIFT_MOVE);
-		pros::delay(50);
-		front_claw_piston->set_value(false);
-		pros::delay(50);
-		lift_front_control->setTarget(FRONT_LIFT_DOWN);
-		int move_time = 100;
 
-		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-		int MAX_TIME = 1400;
-		while((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME) {
-			// if(dist_sensor->get() < 350 && dist_sensor->get() != 0) {
-			// 	drive_rt->moveVoltage(6000);
-			// 	drive_lft->moveVoltage(6000);
-			// 	MAX_TIME = MAX_TIME+3;
-			// }
-			pros::delay(5);
-			move_time += 5;
-		}
-		front_claw_piston->set_value(true);
-		drive_rt->moveVoltage(0);
-		drive_lft->moveVoltage(0);
-		pros::delay(150);
-		lift_front_control->setTarget(FRONT_LIFT_MOVE);
+	//Grab Yellow
+	int DIST = 35;
+	drive_rt->moveVoltage(12000);
+	drive_lft->moveVoltage(12000);
+	front_claw_piston->set_value(true);
+	int move_time = 100;
 
-		// We're on the left
-		if (abs(selector::auton) == 1)
-		{
-			chassis->moveDistance(-4.5_ft);
-			lift_front_control->setTarget(FRONT_LIFT_PLAT);
-			back_claw_piston->set_value(true);
-			back_tilter->set_value(true);
-			pros::delay(250);
-			back_claw_piston->set_value(false);
-			back_tilter->set_value(false);
-			pros::delay(1000);
-			chassis->turnAngle(-90_deg);
-			// if (selector::auton < 0)
-			// {
-			// 	turn_to_goal(camera, drive_lft, drive_rt, BLUE);
-			// }
-			chassis->moveDistance(0.8_ft);
-			pros::delay(1500);
-			chassis->moveDistance(-2_ft);
-			chassis->moveDistance(2_ft);
-			chassis->turnAngle(-110_deg);
-			chassis->moveDistance(-1.75_ft);
-		}
-		// We're on the right
-		else
-		{
-			chassis->moveDistance(-3_ft);
-
-			// Grab Blue
-
-			back_claw_piston->set_value(true);
-			back_tilter->set_value(true);
-			pros::delay(250);
-			back_claw_piston->set_value(false);
-			back_tilter->set_value(false);
-			chassis->turnAngle(-110_deg);
-			chassis->waitUntilSettled();
-			// if (selector::auton < 0)
-			// {
-			// 	turn_to_goal(camera, drive_lft, drive_rt, BLUE);
-			// }
-			chassis->moveDistance(1_ft);
-			chassis->moveDistance(-2_ft);
-			chassis->waitUntilSettled();
-			chassis->moveDistance(1_ft);
-
-			// Pick Up Rings
-			chassis->turnAngle(-110_deg);
-		}
-		intake->moveVoltage(12000);
-		lift_front_control->setTarget(FRONT_LIFT_PLAT);
-
-		chassis->moveDistance(.75_ft);
-		while (true)
-		{
-			chassis->moveDistance(1_ft);
-			chassis->moveDistance(-1_ft);
-		} */
+	drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+	drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+	int MAX_TIME = 1400;
+	while((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME) {
+		// if(dist_sensor->get() < 350 && dist_sensor->get() != 0) {
+		// 	drive_rt->moveVoltage(6000);
+		// 	drive_lft->moveVoltage(6000);
+		// 	MAX_TIME = MAX_TIME+3;
+		// }
+		pros::delay(5);
+		move_time += 5;
 	}
+	front_claw_piston->set_value(false);
+	drive_rt->moveVoltage(0);
+	drive_lft->moveVoltage(0);
+	pros::delay(150);
+	lift_front_control->setTarget(FRONT_LIFT_MOVE);
+	chassis->moveDistance(-4.5_ft);
+	chassis->setMaxVelocity(150);
+	chassis->turnAngle(-20_deg);
+	chassis->waitUntilSettled();
+	chassis->moveDistanceAsync(-2_ft);
+	pros::delay(1500);
+	chassis->stop();
+	chassis->moveDistance(0.4_ft);
+	back_claw_piston->set_value(true);
+	back_tilter->set_value(true);
+	
+	pros::delay(1000);
+	chassis->turnAngle(-100_deg);
+	chassis->waitUntilSettled();
+	// if (selector::auton < 0)
+	// {
+	// 	turn_to_goal(camera, drive_lft, drive_rt, BLUE);
+	// }
+	chassis->moveDistance(-2_ft);
+	back_claw_piston->set_value(false);
+	pros::delay(500);
+	back_tilter->set_value(false);
+	chassis->moveDistance(2_ft);
+	lift_front_control->setTarget(FRONT_LIFT_PLAT);
+	chassis->turnAngle(-85_deg);
+	chassis->waitUntilSettled();
+	chassis->moveDistance(-1.75_ft);
+	
+	intake->moveVoltage(12000);
+	if(dist_sensor->get() > DIST) {
+		front_claw_piston->set_value(false);
+	}
+
+	chassis->moveDistance(.75_ft);
+	int CYCLES = 6;
+	for(int i = 0; i < CYCLES; i++)
+	{
+		chassis->moveDistance(1_ft);
+		chassis->moveDistance(-1_ft);
+	}
+	back_tilter->set_value(true);
 }
 
 /* void autonomous1()
@@ -341,11 +310,12 @@ void opcontrol()
 	int front_claw_timer = 0;
 	int back_claw_timer = 0;
 	bool front_flag = true;
-	bool back_flag = true;
+	bool back_lock = true;
+	bool back_tilt = true;
 	bool chassis_hold = false;
-
 	int back_timer = 0;
 	int front_timer = 0;
+	int y_timer = -1000;
 
 	int double_tap = 0;
 	int move_volt = 11000;
@@ -372,18 +342,12 @@ void opcontrol()
 			lift_front_control->setTarget(FRONT_LIFT_PLAT);
 			// front_claw_control->setTarget(1.0/4.0);
 		}
-		else if (master->get_digital(DIGITAL_L2))
-		{
-			lift_front->moveVelocity(-1000);
-		}
-		else if (master->get_digital(DIGITAL_L1))
-		{
-			lift_front->moveVelocity(1000);
-		}
 		else if (lift_front_control->isSettled())
 		{
 			lift_front->moveVelocity(0);
 		}
+
+		
 
 		if (master->get_digital(DIGITAL_LEFT) && chassis_mode_delay <= 0)
 		{
@@ -431,20 +395,43 @@ void opcontrol()
 			intake->moveVoltage(0);
 		}
 
+		
 		if (front_claw_timer <= 0 && master->get_digital(DIGITAL_B))
 		{
 			front_claw_timer = 300;
 			front_flag = !front_flag;
-		}		
-		if (back_claw_timer <= 0 && master->get_digital(DIGITAL_A))
+			front_claw_piston->set_value(front_flag);
+		}	
+
+		if (y_timer == -1000 && master->get_digital(DIGITAL_L1))
 		{
-			back_claw_timer = 300;
-			back_flag = !back_flag;
+			if(back_lock) {
+				back_tilt = true;	
+				back_tilter->set_value(!back_tilt);
+			}
+			else {
+				y_timer = 500;
+			}
+			back_lock = true;
+			back_claw_piston->set_value(!back_lock);
+		}
+		else if (master->get_digital(DIGITAL_L2))
+		{
+			back_tilt = false;
+			back_tilter->set_value(!back_tilt);
 		}
 
-		front_claw_piston->set_value(front_flag);
-		back_claw_piston->set_value(back_flag);
-		back_tilter->set_value(back_flag);
+		if (!back_tilt && back_claw_timer <= 0 && master->get_digital(DIGITAL_A)) {
+			back_lock = !back_lock;
+			back_claw_piston->set_value(!back_lock);
+			back_claw_timer = 300;
+		}
+
+		if(y_timer != -1000 && y_timer <= 0) {
+			back_tilt = true;
+			back_tilter->set_value(!back_tilt);
+			y_timer = -1000;
+		}
 
 		// if(master->get_digital(DIGITAL_Y)) {
 		// 	turn_to_goal(camera, drive_lft, drive_rt, AUTON_COLOR);
@@ -467,6 +454,9 @@ void opcontrol()
 		if (back_claw_timer > 0)
 		{
 			back_claw_timer = back_claw_timer - 20;
+		}
+		if (y_timer > 0) {
+			y_timer = y_timer - 20;
 		}
 	}
 }
