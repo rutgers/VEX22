@@ -145,7 +145,6 @@ void autonomous()
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-<<<<<<< HEAD
 void opcontrol() {
 	
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
@@ -187,20 +186,6 @@ void opcontrol() {
 	}
 
 
-=======
-void opcontrol()
-{
-
-	int move_volt = 11000;
-	while (true)
-	{
-		double y = master->get_analog(ANALOG_LEFT_Y);
-		double x = 0; // master->get_analog(ANALOG_LEFT_X);
-		double z = -master->get_analog(ANALOG_RIGHT_X);
-		drive_lft->moveVoltage((y + x - z) / 127 * move_volt);
-		drive_rt->moveVoltage((y - x + z) / 127 * move_volt);
-	}
->>>>>>> main
 }
 
 // 	// Controller
