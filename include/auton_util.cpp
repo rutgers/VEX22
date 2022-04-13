@@ -60,9 +60,9 @@ void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<
     double orig_velocity = chassis->getMaxVelocity();
     chassis->setMaxVelocity(100);
     double original_pitch = imu->get_roll();
-    chassis->moveDistanceAsync(12_ft);
+    chassis->moveDistanceAsync(3.2_ft);
 
-    double pitch_change_thresh = 10;
+    double pitch_change_thresh = 40;
 
     while (abs(imu->get_roll() - original_pitch) < pitch_change_thresh)
     {
@@ -74,7 +74,7 @@ void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<
 
     while (abs(imu->get_roll() - original_pitch) < pitch_change_thresh)
     {
-        pros::delay(20);
+        pros::delay(30);
     }
     chassis->stop();
     chassis->setMaxVelocity(orig_velocity);
@@ -83,10 +83,6 @@ void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<
 void imu_turning(double target, std::shared_ptr<okapi::MotorGroup> drive_lft,
                  std::shared_ptr<okapi::MotorGroup> drive_rt, std::shared_ptr<pros::Imu> imu)
 {
-    if(target > 360) {
-        target -= 360;
-    }
-
     double heading = imu->get_heading(); // initial heading
     double err = abs(heading - target);
     double slow_threshold = 50; // need to change this to big as it needs to slow down

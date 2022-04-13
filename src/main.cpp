@@ -26,16 +26,13 @@
 #define SKAR_3 4
 
 // Build Target
-#define BUILD_TARGET SKAR_2 //SKAR_1 or SKAR_2
+#define BUILD_TARGET SKAR_1 //SKAR_1 or SKAR_2
 
 // Initial speed for auton
 #define AUTON_INIT 165
 
 // Build Target
 #if BUILD_TARGET == SKAR_1
-    // Tank Control Swap
-    #define TANK true // TRUE is Tank Drive and FALSE is Regular
-    //bool tank = (bool) getenv("TANK");
     #include "SKAR_1.cpp"
 #endif
 #if BUILD_TARGET == SKAR_2

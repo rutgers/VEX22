@@ -13,12 +13,12 @@ okapi::IterativePosPIDController::Gains ks;
 // Drive Motor Initializations
 std::shared_ptr<okapi::Motor> frontFrontLft;
 std::shared_ptr<okapi::Motor> frontLft;
-std::shared_ptr<okapi::Motor> backLft;
+std::shared_ptr<okapi::Motor> backLft; // top
 std::shared_ptr<okapi::Motor> backBackLft;
 
 std::shared_ptr<okapi::Motor> frontFrontRt;
 std::shared_ptr<okapi::Motor> frontRt;
-std::shared_ptr<okapi::Motor> backRt;
+std::shared_ptr<okapi::Motor> backRt; // top
 std::shared_ptr<okapi::Motor> backBackRt;
 
 std::shared_ptr<okapi::MotorGroup> drive_lft;
@@ -47,6 +47,7 @@ std::shared_ptr<pros::Controller> master;
 
 // Piston Initializations
 std::shared_ptr<pros::ADIDigitalOut> piston;
+std::shared_ptr<pros::ADIDigitalOut> piston1;
 
 // Camera Initialization
 std::shared_ptr<GoalCamera> camera;
