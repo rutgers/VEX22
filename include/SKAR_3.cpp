@@ -1,19 +1,20 @@
-#include "main.h"
-//#include "DriveTrain.cpp"
-#include "okapi/api.hpp"
-#include <vector>
+#include "SKAR_3.hpp"
 /**
  * A callback function for LLEMU's center button.
  *
  * When this callback is fired, it will toggle line 2 of the LCD text between
  * "I was pressed!" and nothing.
  */
-void on_center_button() {
+void on_center_button()
+{
 	static bool pressed = false;
 	pressed = !pressed;
-	if (pressed) {
+	if (pressed)
+	{
 		pros::lcd::set_text(2, "I was pressed!");
-	} else {
+	}
+	else
+	{
 		pros::lcd::clear_line(2);
 	}
 }
@@ -24,11 +25,45 @@ void on_center_button() {
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
+void initialize()
+{
 	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
+	pros::lcd::set_text(1, "Initializing!");
 
 	pros::lcd::register_btn1_cb(on_center_button);
+
+	ks.kP = 0.00101;
+	ks.kI = 0;
+	ks.kD = 0;
+	ks.kBias = 0;
+
+	front_rt1.reset(new okapi::Motor(1, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_rt2.reset(new okapi::Motor(2, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_rt1.reset(new okapi::Motor(3, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_rt2.reset(new okapi::Motor(4, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_lft1.reset(new okapi::Motor(5, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	front_lft2.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_lft1.reset(new okapi::Motor(7, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	back_lft2.reset(new okapi::Motor(8, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+
+	front_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2}));
+	front_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2}));
+	back_rt.reset(new okapi::MotorGroup({back_rt1, back_rt2}));
+	back_lft.reset(new okapi::MotorGroup({back_lft1, back_lft2}));
+
+	drive_lft.reset(new okapi::MotorGroup({front_lft1, front_lft2, back_lft1, back_lft2}));
+	drive_rt.reset(new okapi::MotorGroup({front_rt1, front_rt2, back_rt1, back_rt2}));
+
+	chassis = okapi::ChassisControllerBuilder()
+				  .withMotors(drive_lft, drive_rt)
+				  // Green gearset, 4 in wheel diam, 11.5 in wheel track
+				  .withDimensions(okapi::AbstractMotor::gearset::green, {{3.25_in, 14.5_in}, okapi::imev5GreenTPR})
+				  .withGains(ks, ks)
+				  .build();
+	// IMU
+	imu.reset(new pros::Imu(10));
+
+	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
 }
 
 /**
@@ -60,9 +95,42 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {
-	
- }
+
+/* void imu_turning(double target)
+{
+	double heading = imu->get_heading(); // initial heading
+	double err = abs(heading - target);
+	double slow_threshold = 50; // need to change this to big as it needs to slow down
+	int velocity = 50; // functional with err = 3 and vel = 10
+	while (err >= 3)
+	{
+		int move_volt = 11000;
+		if (err <= slow_threshold)
+		{
+			velocity = 10;
+		}
+		
+		if (target < heading)
+		{ // left
+			drive_lft->moveVelocity(velocity);
+			drive_rt->moveVelocity(-velocity);
+		}
+		else
+		{ // right
+			drive_lft->moveVelocity(-velocity);
+			drive_rt->moveVelocity(velocity);
+		}
+		err = abs(imu->get_heading() - target);
+		// pros::delay(5000);
+	}
+	drive_lft->moveVelocity(0);
+	drive_rt->moveVelocity(0);
+} */
+
+void autonomous()
+{
+	imu_turning(180);
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -77,6 +145,7 @@ void autonomous() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+<<<<<<< HEAD
 void opcontrol() {
 	
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
@@ -118,14 +187,21 @@ void opcontrol() {
 	}
 
 
+=======
+void opcontrol()
+{
+
+	int move_volt = 11000;
+	while (true)
+	{
+		double y = master->get_analog(ANALOG_LEFT_Y);
+		double x = 0; // master->get_analog(ANALOG_LEFT_X);
+		double z = -master->get_analog(ANALOG_RIGHT_X);
+		drive_lft->moveVoltage((y + x - z) / 127 * move_volt);
+		drive_rt->moveVoltage((y - x + z) / 127 * move_volt);
+	}
+>>>>>>> main
 }
-	
-
-
-
-
-
-
 
 // 	// Controller
 // 	pros::Controller master(pros::E_CONTROLLER_MASTER);
@@ -134,21 +210,19 @@ void opcontrol() {
 
 // 	// Front Right Motors
 // 	okapi::Motor front_rt(5, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	
+
 // 	// Front Left Motors
 // 	okapi::Motor front_lft(6, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	
-	
+
 // 	// Back Right Motors
 // 	okapi::Motor back_rt(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	
+
 // 	// Back Left Motors
 // 	okapi::Motor back_lft(15, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-	
+
 // 	// Group Motors
 // 	okapi::MotorGroup left({front_lft, back_lft});
 // 	okapi::MotorGroup right({front_rt, back_rt});
-	
 
 // 	// Chasis Motors Grouped
 // 	/* okapi::ChassisControllerBuilder()
