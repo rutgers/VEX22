@@ -129,7 +129,7 @@ void competition_initialize() {}
 
 void autonomous()
 {
-	imu_turning(180);
+	imu_turning(180, drive_lft, drive_rt, imu);
 }
 
 /**

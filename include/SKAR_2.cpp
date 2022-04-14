@@ -89,7 +89,7 @@ void initialize()
 
 	//camera.reset(new GoalCamera(17));
 
-	imu.reset(new pros::Imu(15));
+	imu.reset(new pros::Imu(4));
 
 	dist_sensor.reset(new pros::Distance(18));
 
@@ -127,7 +127,7 @@ void competition_initialize() {}
  * from where it left off.
  */
 // original autonomous code
-void autonomous()
+void autonomous1()
 {
 	lift_front_control->tarePosition();
 	chassis->stop();
@@ -241,7 +241,7 @@ void autonomous()
 	lift_front_control->setTarget(FRONT_LIFT_MOVE);
 	chassis->moveDistance(-4.5_ft);
 	chassis->setMaxVelocity(150);
-	chassis->turnAngle(-20_deg);
+	chassis->turnAngle(-15_deg);
 	chassis->waitUntilSettled();
 	chassis->moveDistanceAsync(-2_ft);
 	pros::delay(1500);
@@ -262,6 +262,7 @@ void autonomous()
 	pros::delay(500);
 	back_tilter->set_value(false);
 	chassis->moveDistance(2_ft);
+	pros::delay(1000);
 	lift_front_control->setTarget(FRONT_LIFT_PLAT);
 	chassis->turnAngle(-85_deg);
 	chassis->waitUntilSettled();
@@ -280,6 +281,43 @@ void autonomous()
 		chassis->moveDistance(-1_ft);
 	}
 	back_tilter->set_value(true);
+}
+
+/* void imu_turning(double target)
+{
+    double heading = imu->get_heading(); // initial heading
+    double err = abs(heading - target);
+	master->print(1, 1, "%f", heading);
+    double slow_threshold = 50; // need to change this to big as it needs to slow down
+    int velocity = 50;          // functional with err = 3 and vel = 10
+    while (err >= 3)
+    {
+		//master->print(2, 1, "%f", err);
+        int move_volt = 11000;
+        if (err <= slow_threshold)
+        {
+            velocity = 10;
+        }
+
+        if (target < heading)
+        { // left
+            drive_lft->moveVelocity(-velocity);
+            drive_rt->moveVelocity(velocity);
+        }
+        else
+        { // right
+            drive_lft->moveVelocity(velocity);
+            drive_rt->moveVelocity(-velocity);
+        }
+        err = abs(imu->get_heading() - target);
+        // pros::delay(5000);
+    }
+    drive_lft->moveVelocity(0);
+    drive_rt->moveVelocity(0);
+} */
+
+void autonomous() {
+	balance(chassis, imu);
 }
 
 /* void autonomous1()
@@ -432,6 +470,8 @@ void opcontrol()
 			back_tilter->set_value(!back_tilt);
 			y_timer = -1000;
 		}
+
+		// ramp climb toggle
 
 		// if(master->get_digital(DIGITAL_Y)) {
 		// 	turn_to_goal(camera, drive_lft, drive_rt, AUTON_COLOR);

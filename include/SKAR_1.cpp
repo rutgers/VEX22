@@ -92,7 +92,7 @@ void initialize()
 	imu.reset(new pros::Imu(17));
 
 	// Distance Sensor
-	dist_sensor.reset(new pros::Distance(5));
+	dist_sensor.reset(new pros::Distance(11));
 }
 
 /**
@@ -125,161 +125,6 @@ void competition_initialize() {}
  * from where it left off.
  */
 
-/* void auton_left_side()
-{
-	int DIST = 30; // mm distance
-	drive_rt->moveVoltage(12000);
-	drive_lft->moveVoltage(12000);
-	int move_time = 0;
-
-	drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-	drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-	int MAX_TIME = 1400; // seconds want to stop running no matter what (FOR AUTON LINE)
-	while ((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME)
-	{
-		if (dist_sensor->get() < 400 && dist_sensor->get() != 0)
-		{
-			drive_rt->moveVoltage(6000);
-			drive_lft->moveVoltage(6000);
-			MAX_TIME = MAX_TIME + 3;
-		}
-		pros::delay(5);
-		move_time += 5;
-	}
-	drive_rt->moveVoltage(0);
-	drive_lft->moveVoltage(0);
-	piston->set_value(true);
-	pros::delay(150);
-	chassis->moveDistance(-2.75_ft);
-	pros::delay(400);
-
-	// Lift the Front Lift with the Yellow
-	front_lift_control->setTarget(FRONT_LIFT_UP);
-	pros::delay(400);
-
-	// Turn to the blue
-	chassis->turnAngle(-70_deg);
-	pros::delay(500);
-
-	// Move back for the back lift space
-	front_lift_control->setTarget(FRONT_LIFT_UP);
-	pros::delay(100);
-	chassis->setMaxVelocity(90);
-	chassis->moveDistanceAsync(0.9_ft);
-	pros::delay(800);
-	chassis->stop();
-
-	// Bring the Back Lift Down
-	back_lift_control->setTarget(BACK_LIFT_DOWN);
-	pros::delay(1000);
-
-	// Move the chassis towards the blue
-	if (selector::auton < 0)
-	{
-		turn_to_goal(camera, drive_rt, drive_lft, BLUE);
-	}
-	chassis->moveDistanceAsync(-1_ft);
-	pros::delay(1000);
-	chassis->stop();
-
-	// Lift the blue up
-	back_lift_control->setTarget(BACK_LIFT_UP);
-	chassis->setMaxVelocity(90);
-	pros::delay(300);
-
-	// Move back to get rings
-	chassis->moveDistance(0.2_ft);
-
-	// Turn around to put rings inside
-	chassis->turnAngle(60_deg);
-	pros::delay(200);
-
-	// Move toward yellow again
-	chassis->moveDistance(0.2_ft);
-	// piston->set_value(true);
-
-	// Turn around to put rings
-	pros::delay(100);
-	chassis->turnAngle(140_deg);
-
-	// Start moving intake
-	intake->moveVelocity(100);
-
-	// Storing rings time
-	while (true)
-	{
-		chassis->moveDistance(-0.6_ft);
-		chassis->moveDistance(0.6_ft);
-	}
-}
-
-void auton_right_side()
-{
-
-	// Move to the Yellow
-	int DIST = 30; // mm distance
-	drive_rt->moveVoltage(12000);
-	drive_lft->moveVoltage(12000);
-	int move_time = 0;
-
-	drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-	drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-	int MAX_TIME = 1400; // seconds want to stop running no matter what (FOR AUTON LINE)
-	while ((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME)
-	{
-		if (dist_sensor->get() < 400 && dist_sensor->get() != 0)
-		{
-			drive_rt->moveVoltage(6000);
-			drive_lft->moveVoltage(6000);
-			MAX_TIME = MAX_TIME + 3;
-		}
-		pros::delay(5);
-		move_time += 5;
-	}
-	drive_rt->moveVoltage(0);
-	drive_lft->moveVoltage(0);
-	piston->set_value(true);
-	pros::delay(150);
-	chassis->moveDistance(-1.30_ft);
-	pros::delay(400);
-
-	// Turn to the red or blue
-	chassis->turnAngle(-65_deg);
-	pros::delay(200);
-	chassis->moveDistance(0.5_ft);
-	if (selector::auton < 0)
-	{
-		turn_to_goal(camera, drive_rt, drive_lft, BLUE);
-	}
-
-	// turn_to_goal(camera, drive_rt, drive_lft, BLUE);
-
-	// Put the Back Lift Down
-	back_lift_control->setTarget(BACK_LIFT_DOWN);
-	pros::delay(1500);
-
-	// Go toward the Blue or Red neutral goal
-	chassis->moveDistance(-1.2_ft);
-	pros::delay(1000);
-
-	// Lift the back lift up
-	back_lift_control->setTarget(BACK_LIFT_UP);
-	pros::delay(1500);
-
-	// Move back
-	chassis->moveDistance(1_ft);
-	chassis->waitUntilSettled();
-	chassis->turnAngle(-140_deg);
-	chassis->waitUntilSettled();
-	lift_back_control->setTarget(-3.0/8.0*LIFT_GEAR_RATIO);
-	lift_back_control->waitUntilSettled();
-	chassis->moveDistance(-3_ft);
-	chassis->waitUntilSettled();
-	lift_back_control->setTarget(-(2/8.0)*LIFT_GEAR_RATIO);
-	chassis->moveDistance(3_ft);
-	intake->moveVoltage(12000);
- } */
-
 void autonomous()
 {
 	if (selector::auton == 0)
@@ -289,7 +134,7 @@ void autonomous()
 	else
 	{
 		// Move to the Yellow
-		int DIST = 35; // mm distance
+		int DIST = 39; // mm distance
 		drive_rt->moveVoltage(12000);
 		drive_lft->moveVoltage(12000);
 		int move_time = 0;
@@ -319,7 +164,7 @@ void autonomous()
 		pros::delay(400);
 
 		// Turn to the red or blue
-		chassis->turnAngle(-65_deg);
+		chassis->turnAngle(-65_deg); //imu_turning(90, drive_lft, drive_rt, imu);
 		pros::delay(200);
 		chassis->moveDistance(0.5_ft);
 
@@ -333,8 +178,8 @@ void autonomous()
 		chassis->moveDistance(1_ft);
 		pros::delay(1000);
 
-		// turn it around to prepare for loading rings
-		chassis->turnAngle(-65_deg);
+		/* // turn it around to prepare for loading rings
+		chassis->turnAngle(-65_deg); //imu_turning(90, drive_lft, drive_rt, imu);
 		pros::delay(1000);
 
 		// lift front lift
@@ -342,7 +187,7 @@ void autonomous()
 		pros::delay(1000);
 
 		// move a little back
-		chassis->moveDistance(1_ft);
+		chassis->moveDistance(0.3_ft);
 
 		// start intake
 		intake->moveVelocity(-100);
@@ -353,7 +198,7 @@ void autonomous()
 		{
 			chassis->moveDistance(0.5_ft);
 			chassis->moveDistance(-0.5_ft);
-		}
+		} */
 	}
 }
 
@@ -373,6 +218,8 @@ void autonomous()
 void opcontrol()
 {
 
+	chassis->stop();
+
 	piston->set_value(false);
 	piston1->set_value(true);
 
@@ -382,7 +229,7 @@ void opcontrol()
 	int piston_timer1 = 0;
 	bool piston_flag1 = true;
 
-	bool chassis_hold = false;
+	/* bool chassis_hold = false; */
 	int delay = 0;
 	int move_volt = 11000;
 
@@ -421,7 +268,7 @@ void opcontrol()
 		}
 
 		// Back Lift Piston Mechanics
-		if (piston_timer <= 0 && master->get_digital(DIGITAL_X))
+		if (piston_timer <= 0 && master->get_digital(DIGITAL_A))
 		{
 			piston_timer = 200;
 			piston_flag = !piston_flag;
@@ -433,7 +280,7 @@ void opcontrol()
 		}
 
 		// Front Lift Pistons
-		if (piston_timer1 <= 0 && master->get_digital(DIGITAL_A))
+		if (piston_timer1 <= 0 && master->get_digital(DIGITAL_X))
 		{
 			piston_timer1 = 200;
 			piston_flag1 = !piston_flag1;
@@ -459,13 +306,13 @@ void opcontrol()
 		}
 
 		// Brake Mode Toggle
-		if (master->get_digital(DIGITAL_B) && delay <= 0)
+		/* if (master->get_digital(DIGITAL_B) && delay <= 0)
 		{
 			chassis_hold = !chassis_hold;
 			delay = 200;
-		}
+		} */
 
-		if (chassis_hold)
+		/* if (chassis_hold)
 		{
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
@@ -476,7 +323,7 @@ void opcontrol()
 			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 			move_volt = 10000;
-		}
+		} */
 
 		pros::delay(20);
 		if (delay > 0)

@@ -11,6 +11,10 @@
 #include "vision.cpp"
 #endif
 
+void get_position(std::shared_ptr<pros::Imu> imu) {
+    
+}
+
 void turn_to_goal(std::shared_ptr<GoalCamera> camera,
                   std::shared_ptr<okapi::MotorGroup> lft,
                   std::shared_ptr<okapi::MotorGroup> rt,
@@ -58,7 +62,7 @@ void turn_to_goal(std::shared_ptr<GoalCamera> camera,
 void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<pros::Imu> imu)
 {
     double orig_velocity = chassis->getMaxVelocity();
-    chassis->setMaxVelocity(100);
+    chassis->setMaxVelocity(75);
     double original_pitch = imu->get_roll();
     chassis->moveDistanceAsync(3.2_ft);
 
@@ -66,15 +70,15 @@ void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<
 
     while (abs(imu->get_roll() - original_pitch) < pitch_change_thresh)
     {
-        pros::delay(20);
+        //pros::delay(30);
     }
 
-    chassis->moveDistanceAsync(26.5_in);
+    chassis->moveDistanceAsync(32_in);
     original_pitch = imu->get_roll();
 
     while (abs(imu->get_roll() - original_pitch) < pitch_change_thresh)
     {
-        pros::delay(30);
+        //pros::delay(30);
     }
     chassis->stop();
     chassis->setMaxVelocity(orig_velocity);
