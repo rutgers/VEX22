@@ -83,8 +83,11 @@ void initialize()
 	back_tilter.reset(new pros::ADIDigitalOut('B'));
 	back_claw_piston.reset(new pros::ADIDigitalOut('C', true));
 
-	intake.reset(new okapi::Motor(13, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	intake1.reset(new okapi::Motor(13, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	intake2.reset(new okapi::Motor(14, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 
+	intake.reset(new okapi::MotorGroup({intake1, intake2}));
+	
 	intake->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 
 	//camera.reset(new GoalCamera(17));

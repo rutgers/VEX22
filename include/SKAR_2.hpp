@@ -52,7 +52,10 @@ std::shared_ptr<okapi::Motor> lift_front_rt;
 std::shared_ptr<okapi::MotorGroup> lift_front;
 std::shared_ptr<okapi::AsyncPositionController<double, double>> lift_front_control;
 
-std::shared_ptr<okapi::Motor> intake;
+
+std::shared_ptr<okapi::Motor> intake1;
+std::shared_ptr<okapi::Motor> intake2;
+std::shared_ptr<okapi::MotorGroup> intake;
 
 std::shared_ptr<pros::ADIDigitalOut> front_claw_piston;
 std::shared_ptr<pros::ADIDigitalOut> back_tilter;
