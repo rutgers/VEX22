@@ -28,7 +28,7 @@ double BACK_LIFT_UP = (0.03) * BACK_LIFT_GEAR_RATIO;
 double BACK_LIFT_UP_S = (1.5 / 6.0) * BACK_LIFT_GEAR_RATIO;
 
 double FRONT_LIFT_DOWN = (0.05) * FRONT_LIFT_GEAR_RATIO;
-double FRONT_LIFT_UP = (0.27) * FRONT_LIFT_GEAR_RATIO;
+double FRONT_LIFT_UP = (0.5) * FRONT_LIFT_GEAR_RATIO;
 double FRONT_LIFT_UP_S = (0.35) * FRONT_LIFT_GEAR_RATIO;
 double FRONT_LIFT_UP_SLI = (1 / 360.0) * FRONT_LIFT_GEAR_RATIO;
 
@@ -89,10 +89,10 @@ void initialize()
 	camera.reset(new GoalCamera(7));
 
 	// IMU
-	imu.reset(new pros::Imu(17));
+	//imu.reset(new pros::Imu(17));
 
 	// Distance Sensor
-	dist_sensor.reset(new pros::Distance(11));
+	dist_sensor.reset(new pros::Distance(13));
 }
 
 /**
@@ -129,14 +129,14 @@ void autonomous()
 {
 	if (selector::auton == 0)
 	{
-
+		chassis->moveDistance(1_ft);
 	}
 	else
 	{
 		// Move to the Yellow
-		int DIST = 39; // mm distance
-		drive_rt->moveVoltage(12000);
-		drive_lft->moveVoltage(12000);
+		int DIST = 35; // mm distance
+		drive_rt->moveVoltage(6000);
+		drive_lft->moveVoltage(6000);
 		int move_time = 0;
 
 		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
@@ -144,14 +144,18 @@ void autonomous()
 		int MAX_TIME = 1400; // seconds want to stop running no matter what (FOR AUTON LINE)
 		while ((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME)
 		{
+			//master->print(1, 1, "%d", dist_sensor->get());
+			/*
 			if (dist_sensor->get() < 400 && dist_sensor->get() != 0)
 			{
 				drive_rt->moveVoltage(6000);
 				drive_lft->moveVoltage(6000);
 				MAX_TIME = MAX_TIME + 3;
 			}
+
 			pros::delay(5);
 			move_time += 5;
+			*/
 		}
 		drive_rt->moveVoltage(0);
 		drive_lft->moveVoltage(0);
@@ -160,11 +164,104 @@ void autonomous()
 		piston1->set_value(true);
 
 		// Go back
-		chassis->moveDistance(-1.56_ft);
+		chassis->moveDistance(-1.71_ft);
 		pros::delay(400);
 
 		// Turn to the red or blue
 		chassis->turnAngle(-65_deg); //imu_turning(90, drive_lft, drive_rt, imu);
+		//imu_turning(80, drive_lft, drive_rt, imu);
+		pros::delay(200);
+
+		// drop the yellow in prep for the middle
+		//piston1->set_value(false);
+
+		// move toward the colored mobile goal
+		chassis->moveDistance(0.5_ft);
+		pros::delay(200);
+
+		// Move toward the blue or red
+		chassis->moveDistance(-1.2_ft);
+		pros::delay(1000);
+		piston->set_value(false);
+		pros::delay(1000);
+
+		// Move back from the blue spot
+		chassis->moveDistance(0.2_ft);
+		pros::delay(200);
+
+		// turn around for intaking
+		chassis->turnAngle(-67_deg);
+		pros::delay(500);
+
+		// turn a little toward for intaking
+		chassis->moveDistance(0.5_ft);
+		pros::delay(200);
+
+		// move the front lift up
+		front_lift_control->setTarget(-FRONT_LIFT_DOWN);
+		pros::delay(200);
+
+		/* // start intaking motion
+		intake->moveVelocity(100);
+
+		// start intaking motion
+		while(true) {
+			chassis->moveDistance(0.5_ft);
+			pros::delay(200);
+			chassis->moveDistance(-0.5_ft);
+		} */
+
+		/* // turn toward the middle yellow
+		chassis->turnAngle(27_deg);
+		pros::delay(200);
+
+		// Move to the Middle Yellow
+		DIST = 210; // mm distance
+		drive_rt->moveVoltage(12000);
+		drive_lft->moveVoltage(12000);
+		move_time = 0;
+
+		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
+		MAX_TIME = 1400; // seconds want to stop running no matter what (FOR AUTON LINE)
+		while ((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME)
+		{
+			//master->print(1, 1, "%d", dist_sensor->get());
+			
+			if (dist_sensor->get() < 400 && dist_sensor->get() != 0)
+			{
+				drive_rt->moveVoltage(6000);
+				drive_lft->moveVoltage(6000);
+				MAX_TIME = MAX_TIME + 3;
+			}
+
+			pros::delay(5);
+			move_time += 5;
+			
+		}
+		drive_rt->moveVoltage(0);
+		drive_lft->moveVoltage(0);
+
+		// Grab the yellow
+		piston1->set_value(true);
+
+		// move back
+		chassis->moveDistance(-2_ft);
+		pros::delay(200);
+
+		// drop the middle yellow for prep for Intake
+		piston1->set_value(false);
+		pros::delay(200);
+
+		// turn around intaking
+		chassis->turnAngle(167_deg);
+		pros::delay(200);
+
+		// move a little more back
+		chassis->moveDistance(-1_ft);
+		pros::delay(200); */
+
+		/*
 		pros::delay(200);
 		chassis->moveDistance(0.5_ft);
 
@@ -177,6 +274,7 @@ void autonomous()
 		// Move back
 		chassis->moveDistance(1_ft);
 		pros::delay(1000);
+		*/
 
 		/* // turn it around to prepare for loading rings
 		chassis->turnAngle(-65_deg); //imu_turning(90, drive_lft, drive_rt, imu);
@@ -251,6 +349,11 @@ void opcontrol()
 			double y_r = master->get_analog(ANALOG_RIGHT_Y);
 			drive_lft->moveVoltage(y_l / 127 * move_volt);
 			drive_rt->moveVoltage(y_r / 127 * move_volt);
+			/* double y = master->get_analog(ANALOG_LEFT_Y);
+			double x = 0; // master->get_analog(ANALOG_LEFT_X);
+			double z = master->get_analog(ANALOG_RIGHT_X);
+			drive_lft->moveVoltage((y + x + z) / 127 * move_volt);
+			drive_rt->moveVoltage((y - x - z) / 127 * move_volt); */
 		}
 
 		// Front Lifting Mechanics
