@@ -59,13 +59,16 @@ Once you are the part where you can start coding, let's set up a build function 
 
 // Build Target
 #if BUILD_TARGET == <MACRO NAME FOR SKAR BOT 1>
-    #include "SKAR_1.cpp"
+    #include "<Insert Name here>.cpp"
 #endif
 #if BUILD_TARGET == <MACRO NAME FOR SKAR BOT 1>
-    #include "SKAR_2.cpp"
+    #include "<Insert Name Here>.cpp"
 #endif
 #if BUILD_TARGET == <MACRO NAME FOR SKAR BOT 1>
-    #include "SKAR_3.cpp"
+    #include "<Insert Name Here>.cpp"
 #endif
 ```
 You might see there are fancy things on there (i.e: auton selector) that will be talked about later in this documentation.
+
+## Programming the Robot
+When you are done setting up your main file, we can start programming the robot. To start programming the robot, go to the include folder and make a new file called whatever your naming the robot.cpp. You probably remember that in the main.cpp file you saw default code where there was a init function, opcontrol function, etc. We will be basically using that in each definition of the cpp file. 
