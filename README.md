@@ -17,14 +17,22 @@ Now that we have our Integrated Development Environment ready, we can start prog
 Once you are the part where you can start coding, let's set up a build function to start coding to multiple bots all in one ide <img src="https://i.ytimg.com/vi/P9PD8V_iyxQ/maxresdefault.jpg" width=40px height=30px/>. Go to your main.cpp file where we will setup the building capability where all you need to do to build to a certain bot (i.e: SKAR_1, SKAR_2, ...). Now that your in your main file 
 
 ```cpp
+
+/*
+ 
+ <MACRO NAME FOR SKAR BOT> is usually in all caps for example SKAR_1 (for the first skar bot) 
+    - It can also be BIG_BOT, SMALL_BOT (all up to your discretion)
+ 
+ */
+
 #ifndef MAIN_H
 #define MAIN_H
 #include "main.h"
 #endif
-// #ifndef MACRO
-//#define MACRO
-// #include library hpp file
-// #endif
+#ifndef MACRO
+#define MACRO
+#include library hpp file
+#endif
 
 /*
 
