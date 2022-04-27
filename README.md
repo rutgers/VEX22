@@ -20,6 +20,10 @@ Once you are the part where you can start coding, let's set up a build function 
 
 /*
  
+ MACRO is the macro name that is all in caps usually 
+ 
+ library hpp file is the library that you want to define
+ 
  <MACRO NAME FOR SKAR BOT> is usually in all caps for example SKAR_1 (for the first skar bot) 
     - It can also be BIG_BOT, SMALL_BOT (all up to your discretion)
  
