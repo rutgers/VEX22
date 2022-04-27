@@ -68,3 +68,4 @@ Once you are the part where you can start coding, let's set up a build function 
     #include "SKAR_3.cpp"
 #endif
 ```
+You might see there are fancy things on there (i.e: auton selector) that will be talked about later in this documentation.
