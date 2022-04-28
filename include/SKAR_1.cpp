@@ -50,18 +50,20 @@ void initialize()
 	ks.kBias = 0;
 
 	// Drive Motors
-	frontFrontLft.reset(new okapi::Motor(3, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	frontLft.reset(new okapi::Motor(4, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	backLft.reset(new okapi::Motor(1, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	backBackLft.reset(new okapi::Motor(2, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	frontFrontLft.reset(new okapi::Motor(6, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	frontLft.reset(new okapi::Motor(4, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	frontUpperLft.reset(new okapi::Motor(3, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	backLft.reset(new okapi::Motor(2, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	backBackLft.reset(new okapi::Motor(1, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 
-	frontFrontRt.reset(new okapi::Motor(8, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	frontRt.reset(new okapi::Motor(7, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	backRt.reset(new okapi::Motor(10, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
-	backBackRt.reset(new okapi::Motor(9, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
+	frontFrontRt.reset(new okapi::Motor(20, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	frontRt.reset(new okapi::Motor(19, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	frontUpperRt.reset(new okapi::Motor(9, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	backRt.reset(new okapi::Motor(17, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
+	backBackRt.reset(new okapi::Motor(14, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations));
 
-	drive_lft.reset(new okapi::MotorGroup({frontFrontLft, frontLft, backLft, backBackLft}));
-	drive_rt.reset(new okapi::MotorGroup({frontFrontRt, frontRt, backRt, backBackRt}));
+	drive_lft.reset(new okapi::MotorGroup({frontFrontLft, frontLft, frontUpperLft, backLft, backBackLft}));
+	drive_rt.reset(new okapi::MotorGroup({frontFrontRt, frontRt, frontUpperRt, backRt, backBackRt}));
 	chassis = okapi::ChassisControllerBuilder()
 				  .withMotors(drive_lft, drive_rt)
 				  // Green gearset, 4 in wheel diam, 11.5 in wheel track
@@ -83,17 +85,20 @@ void initialize()
 	master.reset(new pros::Controller(pros::E_CONTROLLER_MASTER));
 
 	// Pneumatics
-	piston.reset(new pros::ADIDigitalOut('A', true));	// back lift piston
-	piston1.reset(new pros::ADIDigitalOut('C', false)); // front lift piston
+	piston.reset(new pros::ADIDigitalOut('C', true));	// back lift piston
+	front_piston.reset(new pros::ADIDigitalOut('A', false)); // front lift piston
 
 	// Camera
-	camera.reset(new GoalCamera(7));
+	camera.reset(new GoalCamera(11));
 
 	// IMU
 	imu.reset(new pros::Imu(18));
 
 	// Distance Sensor
 	dist_sensor.reset(new pros::Distance(13));
+
+	// Snatcher
+	snatcher.reset(new okapi::Motor(8, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations));
 }
 
 /**
@@ -131,8 +136,8 @@ void autonomous()
 	if (selector::auton == 0)
 	{
 		// Get the colored mobile goal
-		chassis->moveDistance(-0.3_ft);
-		piston->set_value(false);
+		chassis->moveDistance(0.3_ft);
+		/* piston->set_value(false);
 		pros::delay(200);
 
 		// drive a little forward
@@ -140,8 +145,8 @@ void autonomous()
 		pros::delay(200);
 
 		// lift the front lift up
-		/* front_lift_control->setTarget(-FRONT_LIFT_DOWN);
-		pros::delay(500); */
+		front_lift_control->setTarget(-FRONT_LIFT_DOWN);
+		pros::delay(500);
 
 		// turn around 90 degrees
 		imu_turning(270, drive_rt, drive_lft, imu);
@@ -154,7 +159,7 @@ void autonomous()
 
 		// turn around to line front with rings
 		imu_turning(270, drive_rt, drive_lft, imu);
-		pros::delay(200);
+		pros::delay(200); */
 
 		// move to line up with rings line
 		/* chassis->moveDistance(-0.4_ft);
@@ -172,8 +177,8 @@ void autonomous()
 	{
 		// Move to the Yellow
 		int DIST = 35; // mm distance
-		drive_rt->moveVoltage(12000);
 		drive_lft->moveVoltage(12000);
+		drive_rt->moveVoltage(12000);
 		int move_time = 0;
 
 		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
@@ -181,7 +186,7 @@ void autonomous()
 		int MAX_TIME = 1400; // seconds want to stop running no matter what (FOR AUTON LINE)
 		while ((dist_sensor->get() > DIST || dist_sensor->get() == 0) && move_time < MAX_TIME)
 		{
-			/*
+			
 			if (dist_sensor->get() < 400 && dist_sensor->get() != 0)
 			{
 				drive_rt->moveVoltage(6000);
@@ -191,25 +196,25 @@ void autonomous()
 
 			pros::delay(5);
 			move_time += 5;
-			*/
+			
 		}
 		drive_rt->moveVoltage(0);
 		drive_lft->moveVoltage(0);
 
 		// Grab the yellow
-		piston1->set_value(true);
+		front_piston->set_value(true);
 
 		// Go back
 		chassis->moveDistance(-1.61_ft);
 		chassis->setMaxVelocity(100);
 		pros::delay(400);
 
-		// Turn to the red or blue
+		/* // Turn to the red or blue
 		chassis->turnAngle(-60_deg); //imu_turning(90, drive_lft, drive_rt, imu);
 		pros::delay(200);
 
 		// drop the yellow in prep for the middle
-		//piston1->set_value(false);
+		//front_piston->set_value(false);
 
 		// Move toward the blue or red
 		chassis->moveDistance(-0.5_ft);
@@ -219,32 +224,7 @@ void autonomous()
 
 		// Move back from the blue spot
 		chassis->moveDistance(0.2_ft);
-		pros::delay(200);
-
-		// SLOWWWWWWWWWWW DOWNNNNNN
-		chassis->setMaxVelocity(50);
-
-		// turn around for intaking
-		chassis->turnAngle(-67_deg);
-		pros::delay(500);
-
-		// move the front lift up
-		front_lift_control->setTarget(-FRONT_LIFT_DOWN);
-		pros::delay(500);
-
-		// turn a little toward for intaking
-		chassis->moveDistance(1.0_ft);
-		pros::delay(500);
-
-		// start intake
-		intake->moveVelocity(-500);
-		pros::delay(200);
-
-		// set velocity for intaking
-		while(true) {
-			chassis->moveDistance(-1_ft);
-			chassis->moveDistance(1_ft);
-		}
+		pros::delay(200); */
 
 	}
 }
@@ -268,7 +248,7 @@ void opcontrol()
 	chassis->stop();
 
 	piston->set_value(false);
-	piston1->set_value(true);
+	front_piston->set_value(true);
 
 	int piston_timer = 0;
 	bool piston_flag = true;
@@ -294,7 +274,7 @@ void opcontrol()
 		}
 		else
 		{
-			double y_l = master->get_analog(ANALOG_LEFT_Y);
+			double y_l = -master->get_analog(ANALOG_LEFT_Y);
 			double y_r = master->get_analog(ANALOG_RIGHT_Y);
 			drive_lft->moveVoltage(y_l / 127 * move_volt);
 			drive_rt->moveVoltage(y_r / 127 * move_volt);
@@ -337,7 +317,7 @@ void opcontrol()
 			piston_timer1 = 200;
 			piston_flag1 = !piston_flag1;
 		}
-		piston1->set_value(piston_flag1);
+		front_piston->set_value(piston_flag1);
 		if (piston_timer1 > 0)
 		{
 			piston_timer1 = piston_timer1 - 20;
@@ -357,25 +337,14 @@ void opcontrol()
 			intake->moveVelocity(0);
 		}
 
-		// Brake Mode Toggle
-		/* if (master->get_digital(DIGITAL_B) && delay <= 0)
-		{
-			chassis_hold = !chassis_hold;
-			delay = 200;
-		} */
-
-		/* if (chassis_hold)
-		{
-			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
-			move_volt = 500;
+		// Snatcher
+		if (master->get_digital(DIGITAL_R1)){
+			snatcher->moveVelocity(-100);
+		} else if (master->get_digital(DIGITAL_R2)) {
+			snatcher->moveVelocity(100);
+		} else {
+			snatcher->moveVelocity(0);
 		}
-		else
-		{
-			drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
-			drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
-			move_volt = 10000;
-		} */
 
 		pros::delay(20);
 		if (delay > 0)
