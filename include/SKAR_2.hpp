@@ -24,8 +24,17 @@ double FRONT_LIFT_DOWN = 1.0/360.0*FRONT_LIFT_GEAR_RATIO;
 double FRONT_LIFT_MOVE = 10.0/360.0*FRONT_LIFT_GEAR_RATIO;
 double FRONT_LIFT_INIT = 0/360.0*FRONT_LIFT_GEAR_RATIO;
 
-int INTAKE_IN = 12000;
-int INTAKE_OUT = -12000;
+bool FRONT_CLAW_GRAB = false;
+bool FRONT_CLAW_RELEASE = true;
+
+bool BACK_TILTER_DOWN = true;
+bool BACK_TILTER_UP = false;
+
+bool BACK_CLAW_GRAB = false;
+bool BACK_CLAW_RELEASE = true;
+
+int INTAKE_IN = -12000;
+int INTAKE_OUT = 12000;
 
 std::shared_ptr<okapi::Motor> front_rt1;
 std::shared_ptr<okapi::Motor> front_rt2;
@@ -52,7 +61,9 @@ std::shared_ptr<okapi::Motor> lift_front_rt;
 std::shared_ptr<okapi::MotorGroup> lift_front;
 std::shared_ptr<okapi::AsyncPositionController<double, double>> lift_front_control;
 
-std::shared_ptr<okapi::Motor> intake;
+std::shared_ptr<okapi::Motor> intake_lft;
+std::shared_ptr<okapi::Motor> intake_rt;
+std::shared_ptr<okapi::MotorGroup> intake;
 
 std::shared_ptr<pros::ADIDigitalOut> front_claw_piston;
 std::shared_ptr<pros::ADIDigitalOut> back_tilter;

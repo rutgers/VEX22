@@ -11,9 +11,35 @@
 #include "vision.cpp"
 #endif
 
-void get_position(std::shared_ptr<pros::Imu> imu) {
-    
-}
+
+class PID_Controller {
+    public:
+    double kp = 0;
+    double ki = 0;
+    double kd = 0;
+    double dt = 0;
+    double sum = 0;
+    double last_err = 0;
+
+    PID_Controller(double kp_, double ki_, double kd_, double dt_) {
+        kp = kp_;
+        ki = ki_;
+        kd = kd_;
+        dt = dt_;
+    }
+
+    void reset(double err) {
+        sum = 0;
+        last_err = err;
+    }
+
+    double update(double err) {
+        sum = sum + err*dt;
+        double output = kp*err + ki*sum + kd*(err-last_err)/dt;
+        last_err = err;
+        return output;
+    }
+};
 
 void turn_to_goal(std::shared_ptr<GoalCamera> camera,
                   std::shared_ptr<okapi::MotorGroup> lft,
@@ -59,58 +85,70 @@ void turn_to_goal(std::shared_ptr<GoalCamera> camera,
     rt->moveVoltage(0);
 }
 
-void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<pros::Imu> imu)
+void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<pros::Imu> imu, std::shared_ptr<pros::Controller> master)
 {
+    master->print(1, 1, "roll: %f", imu->get_pitch());
     double orig_velocity = chassis->getMaxVelocity();
-    chassis->setMaxVelocity(75);
-    double original_pitch = imu->get_roll();
+    chassis->setMaxVelocity(70);
+    double original_pitch = imu->get_pitch();
     chassis->moveDistanceAsync(3.2_ft);
 
-    double pitch_change_thresh = 40;
+    double pitch_change_thresh = 21;
 
-    while (abs(imu->get_roll() - original_pitch) < pitch_change_thresh)
-    {
-        //pros::delay(30);
+    while (abs(imu->get_pitch() - original_pitch) < pitch_change_thresh)
+    {   
+        master->print(1, 1, "pitch: %d vs %d", (int) imu->get_pitch(), (int) original_pitch);
+        pros::delay(30);
     }
+    chassis->stop();
+    chassis->setMaxVelocity(40);
+    chassis->moveDistanceAsync(30_in);
+    pros::delay(500);
+    original_pitch = imu->get_pitch();
+    pitch_change_thresh = 4;
 
-    chassis->moveDistanceAsync(32_in);
-    original_pitch = imu->get_roll();
-
-    while (abs(imu->get_roll() - original_pitch) < pitch_change_thresh)
+    while (abs(imu->get_pitch() - original_pitch) < pitch_change_thresh)
     {
-        //pros::delay(30);
+        // if(chassis->isSettled()) {
+        //     chassis->moveDistanceAsync(1_in);
+        // }
+        master->print(1, 1, "on_roll: %d vs %d", (int) imu->get_pitch(), (int) original_pitch);
+        pros::delay(30);
     }
     chassis->stop();
     chassis->setMaxVelocity(orig_velocity);
 }
 
-void imu_turning(double target, std::shared_ptr<okapi::MotorGroup> drive_lft,
-                 std::shared_ptr<okapi::MotorGroup> drive_rt, std::shared_ptr<pros::Imu> imu)
+void imu_turning(double target, std::shared_ptr<okapi::MotorGroup> drive_lft, std::shared_ptr<okapi::MotorGroup> drive_rt, std::shared_ptr<pros::IMU> imu, std::shared_ptr<pros::Controller> master)
 {
-    double heading = imu->get_heading(); // initial heading
-    double err = abs(heading - target);
-    double slow_threshold = 50; // need to change this to big as it needs to slow down
-    int velocity = 50;          // functional with err = 3 and vel = 10
-    while (err >= 3)
-    {
-        int move_volt = 11000;
-        if (err <= slow_threshold)
-        {
-            velocity = 10;
-        }
+	double heading = imu->get_rotation(); // initial heading
+	double kp = 2.3;
+	double ki = 0;
+	double kd = .1;
 
-        if (target < heading)
-        { // left
-            drive_lft->moveVelocity(velocity);
-            drive_rt->moveVelocity(-velocity);
-        }
-        else
-        { // right
-            drive_lft->moveVelocity(-velocity);
-            drive_rt->moveVelocity(velocity);
-        }
-        err = abs(imu->get_heading() - target);
-        // pros::delay(5000);
+	double dt = 5;
+	double tol = 1.5;
+	PID_Controller controller = PID_Controller(kp, ki, kd, dt/1000);
+	double err = target-heading;
+	controller.reset(err);
+	double steady_time = 400;
+	double below_tol_time = 0;
+    while (abs(err) >= tol || below_tol_time < steady_time)
+    {	
+		heading = imu->get_rotation();
+		err = heading - target;
+		double output = controller.update(err);
+        output = output/abs(output)*std::min(abs(output), (double) 12000);
+		drive_lft->moveVelocity(-output);
+		drive_rt->moveVelocity(output);
+        master->print(1, 1, "pow: %d, rot: %d, ", (int) err, (int) output);
+		if(abs(err) < tol) {
+			below_tol_time = below_tol_time + dt;
+		}
+		else {
+			below_tol_time = 0;
+		}
+		pros::delay(dt);
     }
     drive_lft->moveVelocity(0);
     drive_rt->moveVelocity(0);
