@@ -102,7 +102,7 @@ void balance(std::shared_ptr<okapi::ChassisController> chassis, std::shared_ptr<
     }
     chassis->stop();
     chassis->setMaxVelocity(40);
-    chassis->moveDistanceAsync(30_in);
+    chassis->moveDistanceAsync(31_in);
     pros::delay(500);
     original_pitch = imu->get_pitch();
     pitch_change_thresh = 4;
@@ -124,7 +124,7 @@ void imu_turning(double target, std::shared_ptr<okapi::MotorGroup> drive_lft, st
 	double heading = imu->get_rotation(); // initial heading
 	double kp = 2.3;
 	double ki = 0;
-	double kd = .1;
+	double kd = .13;
 
 	double dt = 5;
 	double tol = 1.5;

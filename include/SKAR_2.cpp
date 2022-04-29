@@ -141,11 +141,12 @@ void autonomous()
 	chassis->setMaxVelocity(200);
 	if (selector::auton == 0)
 	{
+		int move_vel = 105;
+		chassis->setMaxVelocity(move_vel);
 		//grabbing the balance goal
 		front_claw_piston->set_value(FRONT_CLAW_RELEASE); 
 		back_claw_piston->set_value(BACK_CLAW_RELEASE); 
-		int move_vel = 100;
-		chassis->setMaxVelocity(move_vel);
+
 		back_tilter->set_value(BACK_TILTER_DOWN); 
 		pros::delay(750);
 		chassis->moveDistance(-15_in);
@@ -223,8 +224,7 @@ void autonomous()
 		chassis->moveDistance(-3_in);
 		imu_turning_2(0);
 		lift_front_control->setTarget(FRONT_LIFT_DOWN);
-		pros::delay(1500);
-		chassis->moveDistance(4_ft);
+		chassis->moveDistance(5_ft);
 		front_claw_piston->set_value(FRONT_CLAW_GRAB);
 		pros::delay(500);
 		chassis->moveDistance(-1_ft);
@@ -233,15 +233,30 @@ void autonomous()
 		//Go to balance
 		imu_turning_2(-90);
 		intake->moveVoltage(INTAKE_IN);
-		chassis->moveDistance(8_ft);
+		chassis->moveDistance(4_ft);
+		imu_turning_2(-180);
+		chassis->moveDistanceAsync(6_ft);
+		timer = 0;
+		while(!chassis->isSettled() && timer <= 3500) {
+			pros::delay(100);
+			timer = timer+100;
+		}
+		chassis->moveDistance(-1_ft);
 		intake->moveVoltage(0);
 		imu_turning_2(-180);
-		chassis->moveDistance(1.5_ft);
+		chassis->moveDistanceAsync(-4_ft);
+		timer = 0;
+		while(!chassis->isSettled() && timer <= 750) {
+			pros::delay(100);
+			timer = timer+100;
+		}
+		imu_turning_2(-90);
+		chassis->moveDistance(1.65_ft);
+		chassis->setMaxVelocity(80);		
 		drive_lft->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 		drive_rt->setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-		chassis->setMaxVelocity(80);
 		lift_front_control->setTarget(FRONT_LIFT_DOWN);
-		pros::delay(1500);
+		pros::delay(2000);
 		balance(chassis, imu, master);
 		pros::delay(2000);
 		back_tilter->set_value(BACK_TILTER_DOWN);
